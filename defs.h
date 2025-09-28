@@ -28,6 +28,7 @@ typedef char *string;
 #define FORMAT_C_ARRAY     0  // Tablica C (.h) - pełna tablica C z deklaracją
 #define FORMAT_RAW_DATA    1  // Surowe dane (.hex) - tylko dane bez deklaracji
 #define FORMAT_ASSEMBLER   2  // Format assemblera (.inc)
+#define FORMAT_MASM_ARRAY  3  // Format MASM z makrem .array (.inc)
 
 // Typ formatu wyjściowego
 typedef int OutputFormat;

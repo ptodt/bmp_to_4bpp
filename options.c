@@ -32,6 +32,7 @@ void print_usage(const char* program_name) {
     printf("  -c, --c-array       C-like Array format (.h) (default)\n");
     printf("  -r, --raw-data      Raw Data format (.hex)\n");
     printf("  -a, --assembler     Assembler format (.inc)\n");
+    printf("  -aa, --assembler-array MASM array format (.inc)\n");
     printf("  -p, --progmem       Add PROGMEM keyword to C arrays\n");
     printf("  -n, --name NAME     Set array name (default: image_data)\n");
     printf("  --help              Show this help message\n");
@@ -43,6 +44,7 @@ void print_usage(const char* program_name) {
     printf("  %s -c -p image.bmp output.h\n", program_name);
     printf("  %s -r image.bmp data.hex\n", program_name);
     printf("  %s -a image.bmp data.inc\n", program_name);
+    printf("  %s -aa image.bmp data.inc\n", program_name);
     printf("  %s -n my_image -p image.bmp\n", program_name);
     printf("  %s -n sprite_data -v -a image.bmp sprite.inc\n", program_name);
 }
@@ -68,6 +70,8 @@ int parse_arguments(int argc, char* argv[], ConversionContext* context, char** i
                 context->output_format = FORMAT_RAW_DATA;
             } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--assembler") == 0) {
                 context->output_format = FORMAT_ASSEMBLER;
+            } else if (strcmp(argv[i], "-aa") == 0 || strcmp(argv[i], "--assembler-array") == 0) {
+                context->output_format = FORMAT_MASM_ARRAY;
             } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--progmem") == 0) {
                 context->use_progmem = 1;
             } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--name") == 0) {

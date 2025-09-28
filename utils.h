@@ -29,6 +29,7 @@ void set_default_extension(char* output_file, int output_format);
 int format_c_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int use_progmem);
 int format_raw_data_write(uchar* packed_data, int data_size, FILE* file);
 int format_assembler_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file);
+int format_masm_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file);
 
 // Prototypy funkcji konwersji do skali szarości
 int convert_to_grayscale_4bpp(uchar* image_data, uchar* grayscale_data, int width, int height, int bytes_per_row);
