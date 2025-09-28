@@ -2,6 +2,40 @@
 
 Program do konwersji plików BMP na różne formaty tablic zawierających bajty obrazka w formacie 4bpp (4 bits per pixel).
 
+## Cel projektu
+
+Program umożliwia konwersję obrazów BMP na dane w formacie 4bpp (4 bits per pixel), które mogą być wyświetlane na wyświetlaczach LCD z paletą 16 odcieni. Każdy bajt zawiera 2 piksele, co pozwala na efektywne przechowywanie danych graficznych.
+
+### Przykład konwersji
+
+**Obraz wejściowy (BMP):**
+![Obraz wejściowy](img/sample-image.bmp)
+
+**Rezultat na wyświetlaczu LCD (16 odcieni żółtego):**
+![Rezultat na LCD](img/sample-image.png)
+
+### Jak osiągnąć ten rezultat
+
+1. **Konwersja podstawowa** - zobacz sekcję [Użycie](#użycie):
+   ```bash
+   ./bmp_to_4bpp img/sample-image.bmp
+   ```
+
+2. **Format tablicy C** - zobacz sekcję [Formaty wyjściowe - Tablica C](#1-tablica-c-h---domyślny):
+   ```bash
+   ./bmp_to_4bpp -c img/sample-image.bmp image_data.h
+   ```
+
+3. **Format assemblera** - zobacz sekcję [Formaty wyjściowe - Format assemblera](#3-format-assemblera-inc):
+   ```bash
+   ./bmp_to_4bpp -a img/sample-image.bmp sprite.inc
+   ```
+
+4. **Format MASM** - zobacz sekcję [Formaty wyjściowe - Format MASM](#4-format-masm-z-makrem-array-inc):
+   ```bash
+   ./bmp_to_4bpp -aa -n image_data img/sample-image.bmp sprite.inc
+   ```
+
 ## Opis
 
 Program konwertuje obrazy BMP na różne formaty wyjściowe, gdzie każdy bajt zawiera 2 piksele w formacie 4bpp. Obraz jest automatycznie konwertowany do skali szarości i skalowany do 16 odcieni (0-15).
