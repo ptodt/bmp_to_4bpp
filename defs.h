@@ -30,6 +30,15 @@ typedef char *string;
 #define FORMAT_ASSEMBLER   2  // Format assemblera (.inc)
 #define FORMAT_MASM_ARRAY  3  // Format MASM z makrem .array (.inc)
 
+// Stałe dla głębi kolorów
+#define BITS_PER_PIXEL_4BPP  4  // 4 bits per pixel (domyślne)
+#define BITS_PER_PIXEL_1BPP  1  // 1 bit per pixel
+
+// Stałe dla metod ditheringu (tylko dla 1bpp)
+#define DITHERING_NONE        0  // Bez ditheringu - proste progowanie
+#define DITHERING_FLOYD       1  // Floyd-Steinberg dithering (domyślne)
+#define DITHERING_ORDERED     2  // Ordered 8x8 dithering
+
 // Typ formatu wyjściowego
 typedef int OutputFormat;
 
@@ -40,6 +49,8 @@ typedef struct {
     OutputFormat output_format; // Typ formatu wyjściowego
     int use_progmem;           // 1 = dodaj słowo kluczowe PROGMEM, 0 = bez PROGMEM
     char array_name[64];       // Nazwa tablicy wyjściowej
+    int bits_per_pixel;        // 4 = 4bpp (domyślne), 1 = 1bpp
+    int dithering_method;      // Metoda ditheringu (tylko dla 1bpp)
 } ConversionContext;
 
 #endif

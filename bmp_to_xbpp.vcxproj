@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</ProjectGuid>
-    <RootNamespace>bmpto4bpp</RootNamespace>
+    <RootNamespace>bmptoxbpp</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -146,7 +146,7 @@
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bmp_to_4bpp.c" />
+    <ClCompile Include="bmp_to_xbpp.c" />
     <ClCompile Include="bmp_reader.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>

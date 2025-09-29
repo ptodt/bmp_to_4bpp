@@ -2,12 +2,12 @@ CC=gcc
 CFLAGS=-Wall -std=c99
 LIBS=
 
-SOURCES=bmp_to_4bpp.c bmp_reader.c utils.c options.c
+SOURCES=bmp_to_xbpp.c bmp_reader.c utils.c options.c
 OBJECTS=$(SOURCES:.c=.o)
 
-all: bmp_to_4bpp
+all: bmp_to_xbpp
 
-bmp_to_4bpp: $(OBJECTS)
+bmp_to_xbpp: $(OBJECTS)
 	${CC} -o $@ ${CFLAGS} $(OBJECTS) ${LIBS}
 
 %.o: %.c

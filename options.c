@@ -22,9 +22,12 @@
 void print_usage(const char* program_name) {
     printf("Usage: %s [OPTIONS] INPUT_BMP [OUTPUT_C_FILE]\n", program_name);
     printf("\n");
-    printf("Converts a BMP image to a C array containing 4bpp packed pixel data.\n");
+    printf("Converts a BMP image to a C array containing packed pixel data.\n");
+    printf("Supports both 4bpp (4 bits per pixel) and 1bpp (1 bit per pixel) formats.\n");
     printf("\n");
     printf("Options:\n");
+    printf("  -4, --4bpp          Use 4 bits per pixel (default)\n");
+    printf("  -1, --1bpp          Use 1 bit per pixel (black/white)\n");
     printf("  -h, --horizontal    Scan horizontally (rows) (default)\n");
     printf("  -v, --vertical      Scan vertically (columns)\n");
     printf("  -l, --little-endian Little endian pixel order (default)\n");
@@ -35,12 +38,20 @@ void print_usage(const char* program_name) {
     printf("  -aa, --assembler-array MASM array format (.inc)\n");
     printf("  -p, --progmem       Add PROGMEM keyword to C arrays\n");
     printf("  -n, --name NAME     Set array name (default: image_data)\n");
+    printf("\n");
+    printf("Dithering options (only for 1bpp):\n");
+    printf("  -d, --dither METHOD Floyd-Steinberg dithering (default for 1bpp)\n");
+    printf("                      METHODS: floyd, o8x8, none\n");
+    printf("\n");
     printf("  --help              Show this help message\n");
     printf("\n");
     printf("If OUTPUT_FILE is not specified, defaults to 'image_data.h'.\n");
     printf("\n");
     printf("Examples:\n");
-    printf("  %s image.bmp\n", program_name);
+    printf("  %s image.bmp                    # 4bpp conversion\n", program_name);
+    printf("  %s -1 image.bmp                 # 1bpp with Floyd-Steinberg\n", program_name);
+    printf("  %s -1 -d o8x8 image.bmp         # 1bpp with ordered dithering\n", program_name);
+    printf("  %s -1 -d none image.bmp         # 1bpp without dithering\n", program_name);
     printf("  %s -c -p image.bmp output.h\n", program_name);
     printf("  %s -r image.bmp data.hex\n", program_name);
     printf("  %s -a image.bmp data.inc\n", program_name);
@@ -56,7 +67,11 @@ int parse_arguments(int argc, char* argv[], ConversionContext* context, char** i
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             // Obsługa opcji
-            if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--horizontal") == 0) {
+            if (strcmp(argv[i], "-4") == 0 || strcmp(argv[i], "--4bpp") == 0) {
+                context->bits_per_pixel = BITS_PER_PIXEL_4BPP;
+            } else if (strcmp(argv[i], "-1") == 0 || strcmp(argv[i], "--1bpp") == 0) {
+                context->bits_per_pixel = BITS_PER_PIXEL_1BPP;
+            } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--horizontal") == 0) {
                 context->scan_direction = 1;
             } else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--vertical") == 0) {
                 context->scan_direction = 0;
@@ -81,6 +96,23 @@ int parse_arguments(int argc, char* argv[], ConversionContext* context, char** i
                     i++; // Pomiń następny argument, bo to nazwa tablicy
                 } else {
                     printf("Error: --name requires an argument\n");
+                    return 0;
+                }
+            } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dither") == 0) {
+                if (i + 1 < argc) {
+                    if (strcmp(argv[i + 1], "floyd") == 0) {
+                        context->dithering_method = DITHERING_FLOYD;
+                    } else if (strcmp(argv[i + 1], "o8x8") == 0) {
+                        context->dithering_method = DITHERING_ORDERED;
+                    } else if (strcmp(argv[i + 1], "none") == 0) {
+                        context->dithering_method = DITHERING_NONE;
+                    } else {
+                        printf("Error: Invalid dithering method '%s'. Use: floyd, o8x8, or none\n", argv[i + 1]);
+                        return 0;
+                    }
+                    i++; // Pomiń następny argument, bo to metoda ditheringu
+                } else {
+                    printf("Error: -d/--dither requires an argument (floyd, o8x8, or none)\n");
                     return 0;
                 }
             } else if (strcmp(argv[i], "--help") == 0) {

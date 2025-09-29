@@ -26,7 +26,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bmp_to_4bpp.c">
+    <ClCompile Include="bmp_to_xbpp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="bmp_reader.c">

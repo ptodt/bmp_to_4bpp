@@ -23,7 +23,7 @@
 
 int main(int argc, char* argv[]) {
     printf("\n");
-    printf("BMP to 4bpp Array Converter v1.0 2025-09-28\n");
+    printf("BMP to xbpp Array Converter v1.0 2025-09-28\n");
     printf("\n");
     printf("CODE BY                                      \n");
     printf("    ----.-.---.---.---.                      \n");
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     printf("    -'--'-'---'---'---'               2025.09\n");
     printf("\n");
 
-    ConversionContext context = {1, 1, FORMAT_C_ARRAY, 0, "image_data"}; // Domyślnie: poziomo, little endian, tablica C, bez PROGMEM, nazwa tablicy
+    ConversionContext context = {1, 1, FORMAT_C_ARRAY, 0, "image_data", BITS_PER_PIXEL_4BPP, DITHERING_NONE}; // Domyślnie: poziomo, little endian, tablica C, bez PROGMEM, nazwa tablicy, 4bpp, None
     char* input_path = NULL;
     char* output_path = NULL;
     char output_buffer[256]; // Bufor na ścieżkę wyjściową
@@ -79,6 +79,7 @@ int main(int argc, char* argv[]) {
 
     // Wyświetl opcje konwersji
     printf("- opcje konwersji:\n");
+    printf("  - głębia kolorów: %dbpp\n", context.bits_per_pixel);
     printf("  - kierunek skanowania: %s\n", context.scan_direction ? "poziomy" : "pionowy");
     printf("  - kolejność pikseli: %s endian\n", context.pixel_order ? "little" : "big");
     printf("  - format wyjściowy: %s\n", 
@@ -86,6 +87,11 @@ int main(int argc, char* argv[]) {
            context.output_format == FORMAT_RAW_DATA ? "Surowe dane (.hex)" : "Assembler (.inc)");
     printf("  - PROGMEM: %s\n", context.use_progmem ? "tak" : "nie");
     printf("  - nazwa tablicy: %s\n", context.array_name);
+    if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
+        printf("  - metoda ditheringu: %s\n",
+               context.dithering_method == DITHERING_FLOYD ? "Floyd-Steinberg" :
+               context.dithering_method == DITHERING_ORDERED ? "Ordered 8x8" : "Brak");
+    }
 
     // Oblicz rozmiar wiersza z dopełnieniem
     int row_size = calculate_bmp_row_size(info_header.width, info_header.bits_per_pixel);
@@ -109,12 +115,12 @@ int main(int argc, char* argv[]) {
 
     fclose(file);
 
-    // Konwertuj do skali szarości i 4bpp
+    // Konwertuj do skali szarości
     int width = (int)info_header.width;
     int height = (int)info_header.height;
     
-    // Upewnij się, że szerokość jest parzysta dla pakowania 4bpp
-    if (width % 2 != 0) {
+    // Dla 4bpp upewnij się, że szerokość jest parzysta
+    if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP && width % 2 != 0) {
         width++;
     }
 
@@ -125,15 +131,36 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (!convert_to_grayscale_4bpp(image_data, grayscale_data, (int)info_header.width, (int)info_header.height, row_size)) {
-        printf("Error: Failed to convert to grayscale\n");
+    // Konwertuj do skali szarości w zależności od trybu
+    if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+        if (!convert_to_grayscale_4bpp(image_data, grayscale_data, (int)info_header.width, (int)info_header.height, row_size)) {
+            printf("Error: Failed to convert to grayscale\n");
+            free(image_data);
+            free(grayscale_data);
+            return 1;
+        }
+    } else if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
+        if (!convert_to_grayscale_1bpp(image_data, grayscale_data, (int)info_header.width, (int)info_header.height, row_size, context.dithering_method)) {
+            printf("Error: Failed to convert to grayscale with dithering\n");
+            free(image_data);
+            free(grayscale_data);
+            return 1;
+        }
+    } else {
+        printf("Error: Unsupported bits per pixel: %d\n", context.bits_per_pixel);
         free(image_data);
         free(grayscale_data);
         return 1;
     }
 
-    // Pakuj piksele w format 4bpp
-    int packed_size = (width * height) / 2;
+    // Pakuj piksele w odpowiednim formacie
+    int packed_size;
+    if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+        packed_size = (width * height) / 2; // 2 piksele na bajt
+    } else {
+        packed_size = (width * height + 7) / 8; // 8 pikseli na bajt
+    }
+    
     uchar* packed_data = (uchar*)malloc(packed_size);
     if (!packed_data) {
         printf("Error: Cannot allocate memory for packed data\n");
@@ -142,7 +169,15 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (!pack_pixels_4bpp(grayscale_data, packed_data, width, height, context.scan_direction, context.pixel_order)) {
+    // Wybierz odpowiednią funkcję pakowania
+    int pack_result;
+    if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+        pack_result = pack_pixels_4bpp(grayscale_data, packed_data, width, height, context.scan_direction, context.pixel_order);
+    } else {
+        pack_result = pack_pixels_1bpp(grayscale_data, packed_data, width, height, context.scan_direction, context.pixel_order);
+    }
+    
+    if (!pack_result) {
         printf("Error: Failed to pack pixels\n");
         free(image_data);
         free(grayscale_data);
@@ -151,7 +186,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Zapisz plik wyjściowy
-    if (!write_array(packed_data, packed_size, width, height, context.array_name, output_path, context.output_format, context.use_progmem)) {
+    if (!write_array(packed_data, packed_size, width, height, context.array_name, output_path, context.output_format, context.use_progmem, context.bits_per_pixel, context.dithering_method)) {
         printf("Error: Failed to write output file\n");
         free(image_data);
         free(grayscale_data);
