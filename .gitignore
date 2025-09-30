@@ -1,2 +1,10 @@
 .DS_Store
 **/*.o
+
+# Pliki wykonywalne
+bmp_to_xbpp
+bmp_to_xbpp.exe
+
+# Pliki tymczasowe
+*.tmp
+*.temp
