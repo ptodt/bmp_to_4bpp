@@ -13,9 +13,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "bmp_writer.h"
+#include "bmp_palette.h"
 
 // Funkcja generowania pliku BMP z danych 1bpp
-int generate_1bpp_bmp(uchar* packed_data, int width, int height, const char* output_path) {
+int generate_1bpp_bmp(uchar* packed_data, int width, int height, const char* output_path, int palette_variant, uchar* custom_first, uchar* custom_last) {
     FILE* file = fopen(output_path, "wb");
     if (!file) {
         return 0;
@@ -52,16 +53,16 @@ int generate_1bpp_bmp(uchar* packed_data, int width, int height, const char* out
         .colors_important = 0
     };
     
-    // Paleta kolorów (czarny i biały)
-    BMPColorEntry palette[2] = {
-        {0x00, 0x00, 0x00, 0x00}, // Czarny (BGR)
-        {0xFF, 0xFF, 0xFF, 0x00}  // Biały (BGR)
-    };
+    // Paleta kolorów - wybrana wariant
+    BMPColorEntry palette[2];
+    PaletteContext palette_context = {palette_variant, 2, {custom_first[0], custom_first[1], custom_first[2]}, {custom_last[0], custom_last[1], custom_last[2]}};
+    generate_palette(palette, &palette_context);
     
     // Zapisz nagłówek BMP
     fwrite(&bmp_header, 1, sizeof(BMPHeader), file);
     fwrite(&info_header, 1, sizeof(BMPInfoHeader), file);
     fwrite(palette, 1, sizeof(palette), file);
+    
     
     // Zapisz dane obrazu (od dołu do góry)
     for (int y = height - 1; y >= 0; y--) {
@@ -78,7 +79,7 @@ int generate_1bpp_bmp(uchar* packed_data, int width, int height, const char* out
 }
 
 // Funkcja generowania pliku BMP z danych 4bpp
-int generate_4bpp_bmp(uchar* packed_data, int width, int height, const char* output_path) {
+int generate_4bpp_bmp(uchar* packed_data, int width, int height, const char* output_path, int palette_variant, uchar* custom_first, uchar* custom_last) {
     FILE* file = fopen(output_path, "wb");
     if (!file) {
         return 0;
@@ -115,20 +116,16 @@ int generate_4bpp_bmp(uchar* packed_data, int width, int height, const char* out
         .colors_important = 0
     };
     
-    // Paleta kolorów (16 odcieni szarości)
+    // Paleta kolorów (16 odcieni)
     BMPColorEntry palette[16];
-    for (int i = 0; i < 16; i++) {
-        int gray_value = (i * 255) / 15; // Skala 0-255
-        palette[i].blue = gray_value;
-        palette[i].green = gray_value;
-        palette[i].red = gray_value;
-        palette[i].alpha = 0x00;
-    }
+    PaletteContext palette_context = {palette_variant, 16, {custom_first[0], custom_first[1], custom_first[2]}, {custom_last[0], custom_last[1], custom_last[2]}};
+    generate_palette(palette, &palette_context);
     
     // Zapisz nagłówek BMP
     fwrite(&bmp_header, 1, sizeof(BMPHeader), file);
     fwrite(&info_header, 1, sizeof(BMPInfoHeader), file);
     fwrite(palette, 1, sizeof(palette), file);
+    
     
     // Zapisz dane obrazu (od dołu do góry)
     for (int y = height - 1; y >= 0; y--) {

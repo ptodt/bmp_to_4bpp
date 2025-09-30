@@ -147,25 +147,43 @@ int pack_pixels_4bpp(uchar* grayscale_data, uchar* packed_data, int width, int h
 }
 
 // Implementacja wzorca Strategy
-int write_array(uchar* packed_data, int data_size, int width, int height, const char* array_name, const char* output_path, int output_format, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast) {
+int write_array(uchar* packed_data, int data_size, int width, int height, const char* array_name, const char* output_path, int output_format, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert) {
     FILE* file = fopen(output_path, "w");
     if (!file) {
         return 0;
     }
 
+    // Zastosuj inwersję do danych jeśli wymagane
+    if (invert) {
+        if (bits_per_pixel == BITS_PER_PIXEL_1BPP) {
+            // Dla 1bpp: odwróć bity
+            for (int i = 0; i < data_size; i++) {
+                packed_data[i] = ~packed_data[i];
+            }
+        } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+            // Dla 4bpp: odwróć wartości pikseli (0-15 staje się 15-0)
+            for (int i = 0; i < data_size; i++) {
+                uchar byte = packed_data[i];
+                uchar low_nibble = 15 - (byte & 0x0F);
+                uchar high_nibble = 15 - ((byte >> 4) & 0x0F);
+                packed_data[i] = (high_nibble << 4) | low_nibble;
+            }
+        }
+    }
+
     int result = 0;
     switch (output_format) {
         case 0: // FORMAT_C_ARRAY
-            result = format_c_array_write(packed_data, data_size, width, height, array_name, file, use_progmem, bits_per_pixel, dithering_method, brightness, contrast);
+            result = format_c_array_write(packed_data, data_size, width, height, array_name, file, use_progmem, bits_per_pixel, dithering_method, brightness, contrast, invert);
             break;
         case 1: // FORMAT_RAW_DATA
-            result = format_raw_data_write(packed_data, data_size, file, bits_per_pixel, dithering_method, brightness, contrast);
+            result = format_raw_data_write(packed_data, data_size, file, bits_per_pixel, dithering_method, brightness, contrast, invert);
             break;
         case 2: // FORMAT_ASSEMBLER
-            result = format_assembler_write(packed_data, data_size, width, height, array_name, file, bits_per_pixel, dithering_method, brightness, contrast);
+            result = format_assembler_write(packed_data, data_size, width, height, array_name, file, bits_per_pixel, dithering_method, brightness, contrast, invert);
             break;
         case 3: // FORMAT_MASM_ARRAY
-            result = format_masm_array_write(packed_data, data_size, width, height, array_name, file, bits_per_pixel, dithering_method, brightness, contrast);
+            result = format_masm_array_write(packed_data, data_size, width, height, array_name, file, bits_per_pixel, dithering_method, brightness, contrast, invert);
             break;
         default:
             result = 0;
@@ -177,7 +195,7 @@ int write_array(uchar* packed_data, int data_size, int width, int height, const 
 }
 
 // Zapis formatu tablicy C (implementacja Strategy)
-int format_c_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast) {
+int format_c_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert) {
     // Pobierz aktualną datę i czas
     time_t now = time(0);
     struct tm* tm_info = localtime(&now);
@@ -190,9 +208,21 @@ int format_c_array_write(uchar* packed_data, int data_size, int width, int heigh
     if (bits_per_pixel == BITS_PER_PIXEL_1BPP) {
         const char* dither_name = (dithering_method == DITHERING_FLOYD) ? "Floyd-Steinberg" :
                                  (dithering_method == DITHERING_ORDERED) ? "Ordered 8x8" : "None";
-        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%)", dither_name, brightness, contrast);
-    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP && (brightness != 50 || contrast != 50)) {
-        fprintf(file, " (brightness: %d%%, contrast: %d%%)", brightness, contrast);
+        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%", dither_name, brightness, contrast);
+        if (invert) {
+            fprintf(file, ", inverted");
+        }
+        fprintf(file, ")");
+    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+        if (brightness != 50 || contrast != 50) {
+            fprintf(file, " (brightness: %d%%, contrast: %d%%", brightness, contrast);
+            if (invert) {
+                fprintf(file, ", inverted");
+            }
+            fprintf(file, ")");
+        } else if (invert) {
+            fprintf(file, " (inverted)");
+        }
     }
     fprintf(file, "\n");
     fprintf(file, "const unsigned char %s[%d]%s = {\n", array_name, data_size, generate_c_attributes(use_progmem));
@@ -219,7 +249,7 @@ int format_c_array_write(uchar* packed_data, int data_size, int width, int heigh
 }
 
 // Zapis formatu surowych danych (implementacja Strategy)
-int format_raw_data_write(uchar* packed_data, int data_size, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast) {
+int format_raw_data_write(uchar* packed_data, int data_size, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert) {
     // Pobierz aktualną datę i czas
     time_t now = time(0);
     struct tm* tm_info = localtime(&now);
@@ -231,9 +261,21 @@ int format_raw_data_write(uchar* packed_data, int data_size, FILE* file, int bit
     if (bits_per_pixel == BITS_PER_PIXEL_1BPP) {
         const char* dither_name = (dithering_method == DITHERING_FLOYD) ? "Floyd-Steinberg" :
                                  (dithering_method == DITHERING_ORDERED) ? "Ordered 8x8" : "None";
-        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%)", dither_name, brightness, contrast);
-    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP && (brightness != 50 || contrast != 50)) {
-        fprintf(file, " (brightness: %d%%, contrast: %d%%)", brightness, contrast);
+        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%", dither_name, brightness, contrast);
+        if (invert) {
+            fprintf(file, ", inverted");
+        }
+        fprintf(file, ")");
+    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+        if (brightness != 50 || contrast != 50) {
+            fprintf(file, " (brightness: %d%%, contrast: %d%%", brightness, contrast);
+            if (invert) {
+                fprintf(file, ", inverted");
+            }
+            fprintf(file, ")");
+        } else if (invert) {
+            fprintf(file, " (inverted)");
+        }
     }
     fprintf(file, "\n");
     
@@ -257,7 +299,7 @@ int format_raw_data_write(uchar* packed_data, int data_size, FILE* file, int bit
 }
 
 // Zapis formatu assemblera (implementacja Strategy)
-int format_assembler_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast) {
+int format_assembler_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert) {
     // Pobierz aktualną datę i czas
     time_t now = time(0);
     struct tm* tm_info = localtime(&now);
@@ -270,9 +312,21 @@ int format_assembler_write(uchar* packed_data, int data_size, int width, int hei
     if (bits_per_pixel == BITS_PER_PIXEL_1BPP) {
         const char* dither_name = (dithering_method == DITHERING_FLOYD) ? "Floyd-Steinberg" :
                                  (dithering_method == DITHERING_ORDERED) ? "Ordered 8x8" : "None";
-        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%)", dither_name, brightness, contrast);
-    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP && (brightness != 50 || contrast != 50)) {
-        fprintf(file, " (brightness: %d%%, contrast: %d%%)", brightness, contrast);
+        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%", dither_name, brightness, contrast);
+        if (invert) {
+            fprintf(file, ", inverted");
+        }
+        fprintf(file, ")");
+    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+        if (brightness != 50 || contrast != 50) {
+            fprintf(file, " (brightness: %d%%, contrast: %d%%", brightness, contrast);
+            if (invert) {
+                fprintf(file, ", inverted");
+            }
+            fprintf(file, ")");
+        } else if (invert) {
+            fprintf(file, " (inverted)");
+        }
     }
     fprintf(file, "\n");
     fprintf(file, "%s:\n", array_name);
@@ -296,7 +350,7 @@ int format_assembler_write(uchar* packed_data, int data_size, int width, int hei
 }
 
 // Zapis formatu MASM z makrem .array (implementacja Strategy)
-int format_masm_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast) {
+int format_masm_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert) {
     // Pobierz aktualną datę i czas
     time_t now = time(0);
     struct tm* tm_info = localtime(&now);
@@ -309,9 +363,21 @@ int format_masm_array_write(uchar* packed_data, int data_size, int width, int he
     if (bits_per_pixel == BITS_PER_PIXEL_1BPP) {
         const char* dither_name = (dithering_method == DITHERING_FLOYD) ? "Floyd-Steinberg" :
                                  (dithering_method == DITHERING_ORDERED) ? "Ordered 8x8" : "None";
-        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%)", dither_name, brightness, contrast);
-    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP && (brightness != 50 || contrast != 50)) {
-        fprintf(file, " (brightness: %d%%, contrast: %d%%)", brightness, contrast);
+        fprintf(file, " (dithering: %s, brightness: %d%%, contrast: %d%%", dither_name, brightness, contrast);
+        if (invert) {
+            fprintf(file, ", inverted");
+        }
+        fprintf(file, ")");
+    } else if (bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+        if (brightness != 50 || contrast != 50) {
+            fprintf(file, " (brightness: %d%%, contrast: %d%%", brightness, contrast);
+            if (invert) {
+                fprintf(file, ", inverted");
+            }
+            fprintf(file, ")");
+        } else if (invert) {
+            fprintf(file, " (inverted)");
+        }
     }
     fprintf(file, "\n");
     fprintf(file, ".array %s[%d].byte\n", array_name, data_size);
@@ -562,4 +628,5 @@ int adjust_brightness_contrast(uchar* grayscale_data, int width, int height, int
     
     return 1;
 }
+
 

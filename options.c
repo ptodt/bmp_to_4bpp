@@ -40,6 +40,11 @@ void print_usage(const char* program_name) {
     printf("  -p, --progmem       Add PROGMEM keyword to C arrays\n");
     printf("  -n, --name NAME     Set array name (default: image_data)\n");
     printf("  --bmp               Generate BMP preview\n");
+    printf("  -i, --invert        Invert bits (swap 0 and 1)\n");
+    printf("  --palette VARIANT   Palette variant for 1bpp (bw, gray, green, portfolio, oled_yellow, custom)\n");
+    printf("  --palette4bpp VAR   Palette variant for 4bpp (bw, gray, green, portfolio, oled_yellow, custom)\n");
+    printf("  -cf, --color_first_in_ramp (r,g,b)  First color in custom ramp (8-bit values)\n");
+    printf("  -cl, --color_last_in_ramp (r,g,b)   Last color in custom ramp (8-bit values)\n");
     printf("\n");
     printf("Dithering options (only for 1bpp):\n");
     printf("  -d, --dither METHOD Floyd-Steinberg dithering (default for 1bpp)\n");
@@ -147,9 +152,79 @@ int parse_arguments(int argc, char* argv[], ConversionContext* context, char** i
                     printf("Error: -ct/--contrast requires an argument (0-100)\n");
                     return 0;
                 }
-            } else if (strcmp(argv[i], "--bmp") == 0) {
-                context->generate_bmp = 1;
-            } else if (strcmp(argv[i], "--help") == 0) {
+        } else if (strcmp(argv[i], "--bmp") == 0) {
+            context->generate_bmp = 1;
+        } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--invert") == 0) {
+            context->invert = 1;
+        } else if (strcmp(argv[i], "--palette") == 0) {
+            if (i + 1 < argc) {
+                i++; // Pomiń następny argument, bo to wariant palety
+                if (strcmp(argv[i], "bw") == 0) {
+                    context->palette_variant = 0; // PALETTE_BW
+                } else if (strcmp(argv[i], "gray") == 0) {
+                    context->palette_variant = 1; // PALETTE_GRAY
+                } else if (strcmp(argv[i], "green") == 0) {
+                    context->palette_variant = 2; // PALETTE_GREEN
+                } else if (strcmp(argv[i], "portfolio") == 0) {
+                    context->palette_variant = 3; // PALETTE_PORTFOLIO
+                } else if (strcmp(argv[i], "oled_yellow") == 0) {
+                    context->palette_variant = 4; // PALETTE_OLED_YELLOW
+                } else if (strcmp(argv[i], "custom") == 0) {
+                    context->palette_variant = 5; // PALETTE_CUSTOM
+                } else {
+                    printf("Error: Unknown palette variant '%s'. Use: bw, gray, green, portfolio, oled_yellow, custom\n", argv[i]);
+                    return 0;
+                }
+            } else {
+                printf("Error: --palette requires an argument (bw, gray, green, portfolio, oled_yellow)\n");
+                return 0;
+            }
+        } else if (strcmp(argv[i], "--palette4bpp") == 0) {
+            if (i + 1 < argc) {
+                i++; // Pomiń następny argument, bo to wariant palety
+                if (strcmp(argv[i], "bw") == 0) {
+                    context->palette_4bpp_variant = 0; // PALETTE_BW
+                } else if (strcmp(argv[i], "gray") == 0) {
+                    context->palette_4bpp_variant = 1; // PALETTE_GRAY
+                } else if (strcmp(argv[i], "green") == 0) {
+                    context->palette_4bpp_variant = 2; // PALETTE_GREEN
+                } else if (strcmp(argv[i], "portfolio") == 0) {
+                    context->palette_4bpp_variant = 3; // PALETTE_PORTFOLIO
+                } else if (strcmp(argv[i], "oled_yellow") == 0) {
+                    context->palette_4bpp_variant = 4; // PALETTE_OLED_YELLOW
+                } else if (strcmp(argv[i], "custom") == 0) {
+                    context->palette_4bpp_variant = 5; // PALETTE_CUSTOM
+                } else {
+                    printf("Error: Unknown 4bpp palette variant '%s'. Use: bw, gray, green, portfolio, oled_yellow, custom\n", argv[i]);
+                    return 0;
+                }
+            } else {
+                printf("Error: --palette4bpp requires an argument (bw, gray, green, portfolio, oled_yellow)\n");
+                return 0;
+            }
+        } else if (strcmp(argv[i], "-cf") == 0 || strcmp(argv[i], "--color_first_in_ramp") == 0) {
+            if (i + 1 < argc) {
+                i++; // Pomiń następny argument, bo to kolor
+                if (sscanf(argv[i], "(%hhu,%hhu,%hhu)", &context->custom_color_first[2], &context->custom_color_first[1], &context->custom_color_first[0]) != 3) {
+                    printf("Error: Invalid color format '%s'. Use: (r,g,b) where r,g,b are 0-255\n", argv[i]);
+                    return 0;
+                }
+            } else {
+                printf("Error: -cf requires a color argument in format (r,g,b)\n");
+                return 0;
+            }
+        } else if (strcmp(argv[i], "-cl") == 0 || strcmp(argv[i], "--color_last_in_ramp") == 0) {
+            if (i + 1 < argc) {
+                i++; // Pomiń następny argument, bo to kolor
+                if (sscanf(argv[i], "(%hhu,%hhu,%hhu)", &context->custom_color_last[2], &context->custom_color_last[1], &context->custom_color_last[0]) != 3) {
+                    printf("Error: Invalid color format '%s'. Use: (r,g,b) where r,g,b are 0-255\n", argv[i]);
+                    return 0;
+                }
+            } else {
+                printf("Error: -cl requires a color argument in format (r,g,b)\n");
+                return 0;
+            }
+        } else if (strcmp(argv[i], "--help") == 0) {
                 return 0; // Pokaże pomoc
             } else {
                 printf("Error: Unknown option '%s'\n", argv[i]);

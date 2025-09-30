@@ -20,17 +20,17 @@ int pack_pixels_4bpp(uchar* grayscale_data, uchar* packed_data, int width, int h
 int pack_pixels_1bpp(uchar* grayscale_data, uchar* packed_data, int width, int height, int scan_direction, int pixel_order);
 
 // Wzorzec Strategy dla formatów wyjściowych
-int write_array(uchar* packed_data, int data_size, int width, int height, const char* array_name, const char* output_path, int output_format, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast);
+int write_array(uchar* packed_data, int data_size, int width, int height, const char* array_name, const char* output_path, int output_format, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert);
 
 // Funkcje pomocnicze
 const char* generate_c_attributes(int use_progmem);
 void set_default_extension(char* output_file, int output_format);
 
 // Indywidualne zapisywacze formatów (implementacje Strategy)
-int format_c_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast);
-int format_raw_data_write(uchar* packed_data, int data_size, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast);
-int format_assembler_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast);
-int format_masm_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast);
+int format_c_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert);
+int format_raw_data_write(uchar* packed_data, int data_size, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert);
+int format_assembler_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert);
+int format_masm_array_write(uchar* packed_data, int data_size, int width, int height, const char* array_name, FILE* file, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert);
 
 // Prototypy funkcji konwersji do skali szarości
 int convert_to_grayscale_4bpp(uchar* image_data, uchar* grayscale_data, int width, int height, int bytes_per_row);
@@ -45,6 +45,5 @@ int apply_ordered_dithering(uchar* grayscale_data, int width, int height);
 
 // Prototypy funkcji regulacji obrazu
 int adjust_brightness_contrast(uchar* grayscale_data, int width, int height, int brightness, int contrast);
-
 
 #endif

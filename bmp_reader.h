@@ -15,7 +15,7 @@
 #include "defs.h"
 #include "bmp_defs.h"
 
-// Function prototypes
+// Prototypy funkcji
 int read_bmp_header(FILE* file, BMPHeader* header, BMPInfoHeader* info);
 int read_bmp_image_data(FILE* file, uchar* image_data, int data_size, dword data_offset);
 int validate_bmp_format(BMPHeader* header, BMPInfoHeader* info);

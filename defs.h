@@ -15,7 +15,7 @@
 
 typedef unsigned char uchar;
 typedef unsigned short word;
-typedef unsigned int dword;  // Use 32-bit for BMP compatibility
+typedef unsigned int dword;  // Użyj 32-bit dla kompatybilności z BMP
 typedef word bool;
 typedef char *string;
 
@@ -54,6 +54,11 @@ typedef struct {
     int brightness;            // Jasność 0-100% (tylko dla 1bpp)
     int contrast;              // Kontrast 0-100% (tylko dla 1bpp)
     int generate_bmp;          // 1 = generuj BMP preview (tylko dla 1bpp)
+    int invert;                // 1 = odwróć bity (zamień 0 na 1 i odwrotnie)
+    int palette_variant;       // Wariant palety dla 1bpp (0=BW, 1=GRAY, 2=GREEN, 3=PORTFOLIO, 4=OLED_YELLOW, 5=CUSTOM)
+    int palette_4bpp_variant;  // Wariant palety dla 4bpp (0=BW, 1=GRAY, 2=GREEN, 3=PORTFOLIO, 4=OLED_YELLOW, 5=CUSTOM)
+    uchar custom_color_first[3];  // Pierwszy kolor w rampie niestandardowej (R,G,B)
+    uchar custom_color_last[3];   // Ostatni kolor w rampie niestandardowej (R,G,B)
 } ConversionContext;
 
 #endif

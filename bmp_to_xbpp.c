@@ -21,10 +21,11 @@
 #include "utils.h"
 #include "options.h"
 #include "bmp_writer.h"
+#include "bmp_palette.h"
 
 int main(int argc, char* argv[]) {
     printf("\n");
-    printf("BMP to xbpp Array Converter v1.0 2025-09-28\n");
+    printf("BMP to xbpp Array Converter v1.0.3 2025-09-30\n");
     printf("\n");
     printf("CODE BY                                      \n");
     printf("    ----.-.---.---.---.                      \n");
@@ -33,7 +34,7 @@ int main(int argc, char* argv[]) {
     printf("    -'--'-'---'---'---'               2025.09\n");
     printf("\n");
 
-    ConversionContext context = {1, 1, FORMAT_C_ARRAY, 0, "image_data", BITS_PER_PIXEL_4BPP, DITHERING_NONE, 50, 50, 0}; // Domyślnie: poziomo, little endian, tablica C, bez PROGMEM, nazwa tablicy, 4bpp, None, jasność 50%, kontrast 50%, bez BMP
+    ConversionContext context = {1, 1, FORMAT_C_ARRAY, 0, "image_data", BITS_PER_PIXEL_4BPP, DITHERING_NONE, 50, 50, 0, 0, 0, 0, {0, 0, 0}, {255, 255, 255}}; // Domyślnie: poziomo, little endian, tablica C, bez PROGMEM, nazwa tablicy, 4bpp, None, jasność 50%, kontrast 50%, bez BMP, bez inwersji, paleta BW (0), paleta 4bpp BW (0), kolory niestandardowe (0,0,0) i (255,255,255)
     char* input_path = NULL;
     char* output_path = NULL;
     char output_buffer[256]; // Bufor na ścieżkę wyjściową
@@ -88,13 +89,29 @@ int main(int argc, char* argv[]) {
            context.output_format == FORMAT_RAW_DATA ? "Surowe dane (.hex)" : "Assembler (.inc)");
     printf("  - PROGMEM: %s\n", context.use_progmem ? "tak" : "nie");
     printf("  - nazwa tablicy: %s\n", context.array_name);
-    if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
-        printf("  - metoda ditheringu: %s\n",
-               context.dithering_method == DITHERING_FLOYD ? "Floyd-Steinberg" :
-               context.dithering_method == DITHERING_ORDERED ? "Ordered 8x8" : "Brak");
-        printf("  - jasność: %d%%\n", context.brightness);
-        printf("  - kontrast: %d%%\n", context.contrast);
-    }
+        if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
+            printf("  - metoda ditheringu: %s\n",
+                   context.dithering_method == DITHERING_FLOYD ? "Floyd-Steinberg" :
+                   context.dithering_method == DITHERING_ORDERED ? "Ordered 8x8" : "Brak");
+            printf("  - jasność: %d%%\n", context.brightness);
+            printf("  - kontrast: %d%%\n", context.contrast);
+            const char* palette_names[] = {"BW", "GRAY", "GREEN", "PORTFOLIO", "OLED_YELLOW", "CUSTOM"};
+            printf("  - paleta: %s\n", palette_names[context.palette_variant]);
+            if (context.palette_variant == PALETTE_CUSTOM) {
+                printf("    - pierwszy kolor: (%d,%d,%d)\n", context.custom_color_first[2], context.custom_color_first[1], context.custom_color_first[0]);
+                printf("    - ostatni kolor: (%d,%d,%d)\n", context.custom_color_last[2], context.custom_color_last[1], context.custom_color_last[0]);
+            }
+        } else if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+            const char* palette_4bpp_names[] = {"BW", "GRAY", "GREEN", "PORTFOLIO", "OLED_YELLOW", "CUSTOM"};
+            printf("  - paleta: %s\n", palette_4bpp_names[context.palette_4bpp_variant]);
+            if (context.palette_4bpp_variant == PALETTE_CUSTOM) {
+                printf("    - pierwszy kolor: (%d,%d,%d)\n", context.custom_color_first[2], context.custom_color_first[1], context.custom_color_first[0]);
+                printf("    - ostatni kolor: (%d,%d,%d)\n", context.custom_color_last[2], context.custom_color_last[1], context.custom_color_last[0]);
+            }
+        }
+        if (context.invert) {
+            printf("  - inwersja bitów: włączona\n");
+        }
 
     // Oblicz rozmiar wiersza z dopełnieniem
     int row_size = calculate_bmp_row_size(info_header.width, info_header.bits_per_pixel);
@@ -188,8 +205,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Inwersja jest obsługiwana w write_array
+
     // Zapisz plik wyjściowy
-    if (!write_array(packed_data, packed_size, width, height, context.array_name, output_path, context.output_format, context.use_progmem, context.bits_per_pixel, context.dithering_method, context.brightness, context.contrast)) {
+        if (!write_array(packed_data, packed_size, width, height, context.array_name, output_path, context.output_format, context.use_progmem, context.bits_per_pixel, context.dithering_method, context.brightness, context.contrast, context.invert)) {
         printf("Error: Failed to write output file\n");
         free(image_data);
         free(grayscale_data);
@@ -208,11 +227,12 @@ int main(int argc, char* argv[]) {
             strcat(bmp_path, ".bmp");
         }
         
+        // Generuj BMP preview (bez inwersji - paleta zawsze standardowa)
         int success = 0;
         if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
-            success = generate_1bpp_bmp(packed_data, width, height, bmp_path);
+            success = generate_1bpp_bmp(packed_data, width, height, bmp_path, context.palette_variant, context.custom_color_first, context.custom_color_last);
         } else if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP) {
-            success = generate_4bpp_bmp(packed_data, width, height, bmp_path);
+            success = generate_4bpp_bmp(packed_data, width, height, bmp_path, context.palette_4bpp_variant, context.custom_color_first, context.custom_color_last);
         }
         
         if (success) {

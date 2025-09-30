@@ -145,6 +145,7 @@
     <ClInclude Include="bmp_defs.h" />
     <ClInclude Include="bmp_reader.h" />
     <ClInclude Include="bmp_writer.h" />
+    <ClInclude Include="bmp_palette.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
@@ -152,6 +153,7 @@
     <ClCompile Include="bmp_to_xbpp.c" />
     <ClCompile Include="bmp_reader.c" />
     <ClCompile Include="bmp_writer.c" />
+    <ClCompile Include="bmp_palette.c" />
     <ClCompile Include="options.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>
