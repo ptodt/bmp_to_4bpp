@@ -32,6 +32,10 @@ Program obsługuje różne algorytmy ditheringu dla trybu 1bpp, aby uzyskać naj
 ![Ordered 8x8](img/sample-image-dither-o8x8-1bpp.bmp)
 *Używa matrycy Bayer 8x8 do tworzenia regularnego wzoru ditheringu, optymalnego dla wyświetlaczy.*
 
+**Przykład z regulacją jasności i kontrastu (br60, ct70):**
+![1bpp br60 ct70](img/sample-image-dither-floyd-br60-ct70.bmp)
+*Jasność 60%, kontrast 70% - optymalne ustawienia dla większości obrazów.*
+
 ### Regulacja jasności i kontrastu
 
 Program oferuje zaawansowane opcje regulacji obrazu dla trybu 1bpp:
@@ -183,8 +187,69 @@ Dostępne konfiguracje:
 - `-ct, --contrast PERC` - Kontrast 0-100% (domyślnie 50%)
 - `--bmp` - Generuj BMP preview
 
+### Opcje inwersji:
+- `-i, --invert` - Odwróć bity (zamień 0 na 1 i odwrotnie)
+
+### Opcje palet:
+- `--palette VARIANT` - Wariant palety dla 1bpp (bw, gray, green, portfolio, oled_yellow, custom)
+- `--palette4bpp VAR` - Wariant palety dla 4bpp (bw, gray, green, portfolio, oled_yellow, custom)
+- `-cf, --color_first_in_ramp (r,g,b)` - Pierwszy kolor w rampie niestandardowej (wartości 8-bitowe)
+- `-cl, --color_last_in_ramp (r,g,b)` - Ostatni kolor w rampie niestandardowej (wartości 8-bitowe)
+
 ### Inne opcje:
 - `--help` - Pokaż pomoc
+
+## Palety kolorów
+
+Program oferuje różne palety kolorów zarówno dla trybu 1bpp jak i 4bpp, dostosowane do różnych typów wyświetlaczy:
+
+### Palety niestandardowe
+
+Program obsługuje palety niestandardowe dla obu trybów (1bpp i 4bpp) poprzez opcje `-cf` i `-cl`:
+
+**Przykład użycia:**
+```bash
+# Paleta niestandardowa 1bpp (czerwony → niebieski)
+./bmp_to_xbpp -1 --palette custom -cf "(255,0,0)" -cl "(0,0,255)" --bmp input.bmp output.h
+
+# Paleta niestandardowa 4bpp (zielony → żółty)
+./bmp_to_xbpp -4 --palette4bpp custom -cf "(0,255,0)" -cl "(255,255,0)" --bmp input.bmp output.h
+```
+
+**Format kolorów:**
+- Kolory podawane w formacie `(r,g,b)` gdzie r, g, b to wartości 0-255
+- Dla 1bpp: generowane są tylko 2 kolory (pierwszy i ostatni)
+- Dla 4bpp: generowane są 16 kolorów z interpolacją liniową między pierwszym a ostatnim
+
+### Palety 1bpp (2 kolory):
+- **BW (czarno-biała)** - domyślna: (0,0,0) i (255,255,255)
+- **GRAY (szara)**: (30,30,30) i (128,128,128) - subtelne odcienie szarości
+- **GREEN (zielona)**: (170,170,120) i (80,120,40) - klasyczny zielony LCD
+- **PORTFOLIO (Atari Portfolio)**: (144,238,144) i (72,72,160) - charakterystyczne kolory
+- **OLED_YELLOW (OLED żółty)**: (20,20,20) i (255,220,0) - dla wyświetlaczy OLED
+
+### Palety 4bpp (16 kolorów z interpolacją liniową):
+- **BW (czarno-biała)** - domyślna: interpolacja od (0,0,0) do (255,255,255)
+- **GRAY (szara)**: interpolacja od (30,30,30) do (128,128,128) - ograniczony zakres
+- **GREEN (zielona)**: interpolacja od (170,170,120) do (80,120,40) - odcienie zieleni
+- **PORTFOLIO (Atari Portfolio)**: interpolacja od (144,238,144) do (72,72,160)
+- **OLED_YELLOW (OLED żółty)**: interpolacja od (20,20,20) do (255,220,0)
+
+### Zastosowania palet:
+
+#### Palety 1bpp:
+- **BW**: Uniwersalna, dobre dla większości wyświetlaczy monochromatycznych
+- **GRAY**: Subtelne odcienie, idealna dla wyświetlaczy z ograniczonym kontrastem
+- **GREEN**: Klasyczny zielony LCD, retro wygląd
+- **PORTFOLIO**: Specjalnie dla Atari Portfolio i podobnych urządzeń
+- **OLED_YELLOW**: Dla wyświetlaczy OLED z żółtymi pikselami
+
+#### Palety 4bpp:
+- **BW**: Pełny zakres szarości, uniwersalna
+- **GRAY**: Ograniczony zakres, subtelne przejścia
+- **GREEN**: Odcienie zieleni, retro estetyka
+- **PORTFOLIO**: Charakterystyczne kolory Atari Portfolio
+- **OLED_YELLOW**: Optymalna dla wyświetlaczy OLED
 
 ## Tryb 1bpp
 
@@ -240,6 +305,10 @@ Program oferuje zaawansowaną kontrolę nad konwersją 1bpp poprzez parametry ja
 ./bmp_to_xbpp -1 -br 0 -ct 100 image.bmp  # Bardzo ciemny, maksymalny kontrast
 ./bmp_to_xbpp -1 -br 100 -ct 0 image.bmp  # Bardzo jasny, brak kontrastu
 
+# Palety niestandardowe
+./bmp_to_xbpp -1 --palette custom -cf "(255,0,0)" -cl "(0,0,255)" image.bmp  # Czerwony → niebieski
+./bmp_to_xbpp -4 --palette4bpp custom -cf "(0,255,0)" -cl "(255,255,0)" image.bmp  # Zielony → żółty
+
 # Generowanie BMP preview do wizualizacji
 ./bmp_to_xbpp -1 -br 25 -ct 75 -d floyd --bmp image.bmp preview
 ```
@@ -264,6 +333,154 @@ W trybie 1bpp kolejność bitów w bajcie ma znaczenie:
 - **Little endian** (`-l`): bit 0 = pierwszy piksel (lewy)
 - **Big endian** (`-b`): bit 7 = pierwszy piksel (lewy)
 
+### Inwersja bitów
+
+Program oferuje opcję inwersji bitów (`-i`, `--invert`), która zamienia wszystkie bity w danych wyjściowych:
+- **0** staje się **1**
+- **1** staje się **0**
+
+#### Kiedy używać inwersji?
+
+Inwersja bitów jest przydatna dla wyświetlaczy, które interpretują bity odwrotnie niż standardowo:
+
+**Wyświetlacze wymagające inwersji:**
+- **Atari Portfolio**: bit 1 = zgaszony piksel (czarny), bit 0 = zapalony piksel (biały)
+- **Standardowy zielony LCD**: wymaga inwersji dla poprawnego wyświetlania
+- **Niektóre wyświetlacze LCD** z niestandardową logiką
+
+**Wyświetlacze bez inwersji:**
+- **Wyświetlacze OLED**: standardowa logika (bit 1 = zapalony, bit 0 = zgaszony)
+- **Większość nowoczesnych wyświetlaczy**: standardowa logika
+
+**Standardowo**: bit 1 = zapalony piksel (biały), bit 0 = zgaszony piksel (czarny)
+
+#### Przykład inwersji:
+
+**1bpp - Obraz oryginalny (bez inwersji):**
+![1bpp Normal](img/sample-image-dither-floyd-br60-ct70-normal.bmp)
+*Czarne obszary = 0, białe obszary = 1 (dither: Floyd-Steinberg, br: 60%, ct: 70%)*
+
+**1bpp - Obraz z inwersją (`-i`):**
+![1bpp Invert](img/sample-image-dither-floyd-br60-ct70-invert.bmp)
+*Czarne obszary = 1, białe obszary = 0 (dither: Floyd-Steinberg, br: 60%, ct: 70%)*
+
+**4bpp - Obraz oryginalny (bez inwersji):**
+![4bpp BW Normal](img/sample-image-4bpp-bw-normal.bmp)
+*Ciemne obszary = niskie wartości (0-7), jasne obszary = wysokie wartości (8-15) - paleta BW*
+
+**4bpp - Obraz z inwersją (`-i`):**
+![4bpp BW Invert](img/sample-image-4bpp-bw-invert.bmp)
+*Ciemne obszary = wysokie wartości (8-15), jasne obszary = niskie wartości (0-7) - paleta BW*
+
+#### Przykłady palet 1bpp:
+
+**Paleta BW (czarno-biała) - domyślna:**
+![BW Normal](img/sample-image-dither-floyd-br60-ct70-1bpp-bw-normal.bmp)
+*Indeks 0: (0,0,0), Indeks 1: (255,255,255) - standardowa paleta*
+
+![BW Invert](img/sample-image-dither-floyd-br60-ct70-1bpp-bw-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta GRAY (szara):**
+![GRAY Normal](img/sample-image-dither-floyd-br60-ct70-1bpp-gray-normal.bmp)
+*Indeks 0: (30,30,30), Indeks 1: (128,128,128) - szara paleta*
+
+![GRAY Invert](img/sample-image-dither-floyd-br60-ct70-1bpp-gray-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta GREEN (zielona):**
+![GREEN Normal](img/sample-image-dither-floyd-br60-ct70-1bpp-green-normal.bmp)
+*Indeks 0: (170,170,120), Indeks 1: (80,120,40) - zielona paleta*
+
+![GREEN Invert](img/sample-image-dither-floyd-br60-ct70-1bpp-green-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta PORTFOLIO (Atari Portfolio):**
+![PORTFOLIO Normal](img/sample-image-dither-floyd-br60-ct70-1bpp-portfolio-normal.bmp)
+*Indeks 0: (144,238,144), Indeks 1: (72,72,160) - paleta Atari Portfolio*
+
+![PORTFOLIO Invert](img/sample-image-dither-floyd-br60-ct70-1bpp-portfolio-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta OLED_YELLOW (OLED żółty):**
+![OLED_YELLOW Normal](img/sample-image-dither-floyd-br60-ct70-1bpp-oled_yellow-normal.bmp)
+*Indeks 0: (20,20,20), Indeks 1: (255,220,0) - paleta OLED żółty*
+
+![OLED_YELLOW Invert](img/sample-image-dither-floyd-br60-ct70-1bpp-oled_yellow-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+#### Przykłady palet 4bpp:
+
+**Paleta BW (czarno-biała) - domyślna:**
+![4bpp BW Normal](img/sample-image-4bpp-bw-normal.bmp)
+*Interpolacja liniowa od (0,0,0) do (255,255,255) - 16 odcieni szarości*
+
+![4bpp BW Invert](img/sample-image-4bpp-bw-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta GRAY (szara):**
+![4bpp GRAY Normal](img/sample-image-4bpp-gray-normal.bmp)
+*Interpolacja liniowa od (30,30,30) do (128,128,128) - 16 odcieni szarości w ograniczonym zakresie*
+
+![4bpp GRAY Invert](img/sample-image-4bpp-gray-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta GREEN (zielona):**
+![4bpp GREEN Normal](img/sample-image-4bpp-green-normal.bmp)
+*Interpolacja liniowa od (170,170,120) do (80,120,40) - 16 odcieni zieleni*
+
+![4bpp GREEN Invert](img/sample-image-4bpp-green-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta PORTFOLIO (Atari Portfolio):**
+![4bpp PORTFOLIO Normal](img/sample-image-4bpp-portfolio-normal.bmp)
+*Interpolacja liniowa od (144,238,144) do (72,72,160) - 16 odcieni Portfolio*
+
+![4bpp PORTFOLIO Invert](img/sample-image-4bpp-portfolio-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+**Paleta OLED_YELLOW (OLED żółty):**
+![4bpp OLED_YELLOW Normal](img/sample-image-4bpp-oled_yellow-normal.bmp)
+*Interpolacja liniowa od (20,20,20) do (255,220,0) - 16 odcieni żółci*
+
+![4bpp OLED_YELLOW Invert](img/sample-image-4bpp-oled_yellow-invert.bmp)
+*Z inwersją - dla wyświetlaczy wymagających odwróconej logiki*
+
+#### Użycie:
+```bash
+# Generowanie z inwersją bitów
+./bmp_to_xbpp -1 -d floyd -br 60 -ct 70 -i --bmp img/sample-image.bmp inverted_image
+
+# Inwersja dla 4bpp
+./bmp_to_xbpp -4 -i --bmp img/sample-image.bmp inverted_4bpp
+
+# Różne palety 1bpp (2 kolory)
+./bmp_to_xbpp -1 --palette bw --bmp img/sample-image.bmp bw_image
+./bmp_to_xbpp -1 --palette gray --bmp img/sample-image.bmp gray_image
+./bmp_to_xbpp -1 --palette green --bmp img/sample-image.bmp green_image
+./bmp_to_xbpp -1 --palette portfolio --bmp img/sample-image.bmp portfolio_image
+./bmp_to_xbpp -1 --palette oled_yellow --bmp img/sample-image.bmp oled_yellow_image
+
+# Różne palety 4bpp (16 kolorów z interpolacją liniową)
+./bmp_to_xbpp -4 --palette4bpp bw --bmp img/sample-image.bmp bw_4bpp
+./bmp_to_xbpp -4 --palette4bpp gray --bmp img/sample-image.bmp gray_4bpp
+./bmp_to_xbpp -4 --palette4bpp green --bmp img/sample-image.bmp green_4bpp
+./bmp_to_xbpp -4 --palette4bpp portfolio --bmp img/sample-image.bmp portfolio_4bpp
+./bmp_to_xbpp -4 --palette4bpp oled_yellow --bmp img/sample-image.bmp oled_yellow_4bpp
+
+# Palety 4bpp z inwersją
+./bmp_to_xbpp -4 --palette4bpp bw -i --bmp img/sample-image.bmp bw_4bpp_inverted
+./bmp_to_xbpp -4 --palette4bpp gray -i --bmp img/sample-image.bmp gray_4bpp_inverted
+./bmp_to_xbpp -4 --palette4bpp green -i --bmp img/sample-image.bmp green_4bpp_inverted
+./bmp_to_xbpp -4 --palette4bpp portfolio -i --bmp img/sample-image.bmp portfolio_4bpp_inverted
+./bmp_to_xbpp -4 --palette4bpp oled_yellow -i --bmp img/sample-image.bmp oled_yellow_4bpp_inverted
+
+# Palety z inwersją (dla wyświetlaczy wymagających odwróconej logiki)
+./bmp_to_xbpp -1 --palette bw -i --bmp img/sample-image.bmp bw_inverted
+./bmp_to_xbpp -1 --palette portfolio -i --bmp img/sample-image.bmp portfolio_inverted
+./bmp_to_xbpp -1 --palette oled_yellow -i --bmp img/sample-image.bmp oled_yellow_inverted
+```
+
 ## Formaty wyjściowe
 
 ### 1. Tablica C (.h) - domyślny
@@ -286,6 +503,16 @@ const unsigned char image_data[8192] = {
 // Format: 1bpp (dithering: None)
 const unsigned char image_data[2048] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ...
+};
+```
+
+**Format 1bpp z inwersją bitów:**
+```c
+// Generated by BMP to xbpp Array Converter v1.0 2025-09-28 (c) PTODT 20250930T1458
+// Image size: 256x64
+// Format: 1bpp (dithering: Floyd-Steinberg, brightness: 60%, contrast: 70%, inverted)
+const unsigned char image_data[2048] = {
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, ...
 };
 ```
 
@@ -407,6 +634,12 @@ $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 # 4bpp z generowaniem BMP preview
 ./bmp_to_xbpp -4 --bmp test.bmp grayscale_preview
 
+# 1bpp z inwersją bitów (dla Atari Portfolio)
+./bmp_to_xbpp -1 -d floyd -br 60 -ct 70 -i --bmp test.bmp portfolio_image
+
+# 4bpp z inwersją bitów
+./bmp_to_xbpp -4 -i --bmp test.bmp inverted_4bpp
+
 # 1bpp z big endian
 ./bmp_to_xbpp -1 -b test.bmp big_endian.h
 
@@ -476,23 +709,36 @@ MIT - zobacz nagłówki plików źródłowych dla szczegółów.
 
 ## Lista zmian
 
-### v1.0.2 (30/09/2025) - Rozszerzenie o regulację jasności i kontrastu
+### v1.0.3 (30/09/2025) - Palety niestandardowe i refaktoryzacja
+- **Nowe funkcje:**
+  - dodano palety niestandardowe dla obu trybów (1bpp i 4bpp) z opcjami `-cf` i `-cl`
+  - refaktoryzacja systemu palet - jedna funkcja `generate_palette` z `PaletteContext`
+  - uproszczenie kodu poprzez unifikację obsługi palet 1bpp i 4bpp
+- **Ulepszenia:**
+  - dodano strukturę `PaletteContext` dla lepszej organizacji parametrów palet
+  - zunifikowano stałe palet (usunięto duplikaty PALETTE_1BPP_* i PALETTE_4BPP_*)
+  - dodano obsługę interpolacji liniowej dla palet niestandardowych 4bpp
+
+### v1.0.2 (30/09/2025) - Rozszerzenie o regulację jasności, kontrastu i inwersję bitów
 - **Nowe funkcje:**
   - dodano regulację jasności (`-br`, `--brightness`) 0-100% dla trybu 1bpp
   - dodano regulację kontrastu (`-ct`, `--contrast`) 0-100% dla trybu 1bpp
   - dodano opcję `--bmp` do generowania BMP preview dla obu trybów (1bpp i 4bpp)
-  - rozszerzono komentarze w plikach wynikowych o informacje o jasności i kontrastu
+  - dodano opcję inwersji bitów (`-i`, `--invert`) dla obu trybów (1bpp i 4bpp)
+  - rozszerzono komentarze w plikach wynikowych o informacje o jasności, kontrastu i inwersji
   - dodano skrypty Shell i BAT do generowania serii obrazów z różnymi ustawieniami
 
 - **Ulepszenia:**
   - naprawiono kolejność pikseli w trybie poziomym dla 1bpp
-  - rozszerzono dokumentację o szczegółowe opisy regulacji obrazu
+  - rozszerzono dokumentację o szczegółowe opisy regulacji obrazu i inwersji bitów
   - dodano przykłady obrazów pokazujące efekty różnych ustawień jasności i kontrastu
   - dodano sekcję ze skryptami do automatycznego generowania serii testowych
+  - dodano szczegółowe wyjaśnienie zastosowań inwersji bitów (Atari Portfolio, OLED, LCD)
 
 - **Zachowana kompatybilność:**
   - wszystkie istniejące opcje CLI działają bez zmian
   - opcje regulacji obrazu są ignorowane dla trybu 4bpp (z wyjątkiem `--bmp`)
+  - opcja inwersji bitów działa dla obu trybów (1bpp i 4bpp)
 
 ### v1.0.1 (29/09/2025) - Rozszerzenie o obsługę 1bpp i dithering
 - **Nowe funkcje:**
