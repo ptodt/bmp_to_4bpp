@@ -20,6 +20,7 @@
 #include "bmp_reader.h"
 #include "utils.h"
 #include "options.h"
+#include "bmp_writer.h"
 
 int main(int argc, char* argv[]) {
     printf("\n");
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]) {
     printf("    -'--'-'---'---'---'               2025.09\n");
     printf("\n");
 
-    ConversionContext context = {1, 1, FORMAT_C_ARRAY, 0, "image_data", BITS_PER_PIXEL_4BPP, DITHERING_NONE}; // Domyślnie: poziomo, little endian, tablica C, bez PROGMEM, nazwa tablicy, 4bpp, None
+    ConversionContext context = {1, 1, FORMAT_C_ARRAY, 0, "image_data", BITS_PER_PIXEL_4BPP, DITHERING_NONE, 50, 50, 0}; // Domyślnie: poziomo, little endian, tablica C, bez PROGMEM, nazwa tablicy, 4bpp, None, jasność 50%, kontrast 50%, bez BMP
     char* input_path = NULL;
     char* output_path = NULL;
     char output_buffer[256]; // Bufor na ścieżkę wyjściową
@@ -91,6 +92,8 @@ int main(int argc, char* argv[]) {
         printf("  - metoda ditheringu: %s\n",
                context.dithering_method == DITHERING_FLOYD ? "Floyd-Steinberg" :
                context.dithering_method == DITHERING_ORDERED ? "Ordered 8x8" : "Brak");
+        printf("  - jasność: %d%%\n", context.brightness);
+        printf("  - kontrast: %d%%\n", context.contrast);
     }
 
     // Oblicz rozmiar wiersza z dopełnieniem
@@ -139,8 +142,8 @@ int main(int argc, char* argv[]) {
             free(grayscale_data);
             return 1;
         }
-    } else if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
-        if (!convert_to_grayscale_1bpp(image_data, grayscale_data, (int)info_header.width, (int)info_header.height, row_size, context.dithering_method)) {
+        } else if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
+            if (!convert_to_grayscale_1bpp(image_data, grayscale_data, (int)info_header.width, (int)info_header.height, row_size, context.dithering_method, context.brightness, context.contrast)) {
             printf("Error: Failed to convert to grayscale with dithering\n");
             free(image_data);
             free(grayscale_data);
@@ -186,12 +189,37 @@ int main(int argc, char* argv[]) {
     }
 
     // Zapisz plik wyjściowy
-    if (!write_array(packed_data, packed_size, width, height, context.array_name, output_path, context.output_format, context.use_progmem, context.bits_per_pixel, context.dithering_method)) {
+    if (!write_array(packed_data, packed_size, width, height, context.array_name, output_path, context.output_format, context.use_progmem, context.bits_per_pixel, context.dithering_method, context.brightness, context.contrast)) {
         printf("Error: Failed to write output file\n");
         free(image_data);
         free(grayscale_data);
         free(packed_data);
         return 1;
+    }
+    
+    // Generuj BMP preview jeśli wymagane
+    if (context.generate_bmp) {
+        char bmp_path[256];
+        strcpy(bmp_path, output_path);
+        char* ext = strrchr(bmp_path, '.');
+        if (ext) {
+            strcpy(ext, ".bmp");
+        } else {
+            strcat(bmp_path, ".bmp");
+        }
+        
+        int success = 0;
+        if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
+            success = generate_1bpp_bmp(packed_data, width, height, bmp_path);
+        } else if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP) {
+            success = generate_4bpp_bmp(packed_data, width, height, bmp_path);
+        }
+        
+        if (success) {
+            printf("- BMP preview saved: %s\n", bmp_path);
+        } else {
+            printf("Warning: Failed to generate BMP preview\n");
+        }
     }
 
     printf("- conversion completed successfully\n");

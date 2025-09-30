@@ -13,30 +13,7 @@
 #define __BMP_READER_H__
 
 #include "defs.h"
-
-// BMP header structures
-#pragma pack(push, 1)
-typedef struct {
-    uchar signature[2];     // "BM"
-    dword file_size;        // Size of the BMP file
-    dword reserved;         // Reserved
-    dword data_offset;      // Offset to image data
-} BMPHeader;
-
-typedef struct {
-    dword header_size;      // Size of this header
-    dword width;            // Image width
-    dword height;           // Image height
-    word planes;            // Number of color planes
-    word bits_per_pixel;    // Bits per pixel
-    dword compression;      // Compression type
-    dword image_size;       // Size of image data
-    dword x_pixels_per_meter;
-    dword y_pixels_per_meter;
-    dword colors_used;      // Number of colors used
-    dword colors_important; // Number of important colors
-} BMPInfoHeader;
-#pragma pack(pop)
+#include "bmp_defs.h"
 
 // Function prototypes
 int read_bmp_header(FILE* file, BMPHeader* header, BMPInfoHeader* info);

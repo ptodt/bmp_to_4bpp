@@ -51,6 +51,9 @@ typedef struct {
     char array_name[64];       // Nazwa tablicy wyjściowej
     int bits_per_pixel;        // 4 = 4bpp (domyślne), 1 = 1bpp
     int dithering_method;      // Metoda ditheringu (tylko dla 1bpp)
+    int brightness;            // Jasność 0-100% (tylko dla 1bpp)
+    int contrast;              // Kontrast 0-100% (tylko dla 1bpp)
+    int generate_bmp;          // 1 = generuj BMP preview (tylko dla 1bpp)
 } ConversionContext;
 
 #endif

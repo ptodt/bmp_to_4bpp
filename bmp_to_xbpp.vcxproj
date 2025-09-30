@@ -142,12 +142,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="defs.h" />
+    <ClInclude Include="bmp_defs.h" />
     <ClInclude Include="bmp_reader.h" />
+    <ClInclude Include="bmp_writer.h" />
+    <ClInclude Include="options.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bmp_to_xbpp.c" />
     <ClCompile Include="bmp_reader.c" />
+    <ClCompile Include="bmp_writer.c" />
+    <ClCompile Include="options.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

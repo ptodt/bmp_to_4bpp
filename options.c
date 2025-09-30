@@ -11,6 +11,7 @@
 *****************************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "defs.h"
 #include "options.h"
@@ -38,10 +39,15 @@ void print_usage(const char* program_name) {
     printf("  -aa, --assembler-array MASM array format (.inc)\n");
     printf("  -p, --progmem       Add PROGMEM keyword to C arrays\n");
     printf("  -n, --name NAME     Set array name (default: image_data)\n");
+    printf("  --bmp               Generate BMP preview\n");
     printf("\n");
     printf("Dithering options (only for 1bpp):\n");
     printf("  -d, --dither METHOD Floyd-Steinberg dithering (default for 1bpp)\n");
     printf("                      METHODS: floyd, o8x8, none\n");
+    printf("\n");
+    printf("Image adjustment options (only for 1bpp):\n");
+    printf("  -br, --brightness PERC Brightness 0-100%% (default: 50%%)\n");
+    printf("  -ct, --contrast PERC   Contrast 0-100%% (default: 50%%)\n");
     printf("\n");
     printf("  --help              Show this help message\n");
     printf("\n");
@@ -115,6 +121,34 @@ int parse_arguments(int argc, char* argv[], ConversionContext* context, char** i
                     printf("Error: -d/--dither requires an argument (floyd, o8x8, or none)\n");
                     return 0;
                 }
+            } else if (strcmp(argv[i], "-br") == 0 || strcmp(argv[i], "--brightness") == 0) {
+                if (i + 1 < argc) {
+                    int brightness = atoi(argv[i + 1]);
+                    if (brightness < 0 || brightness > 100) {
+                        printf("Error: Brightness must be between 0 and 100\n");
+                        return 0;
+                    }
+                    context->brightness = brightness;
+                    i++; // Pomiń następny argument, bo to wartość jasności
+                } else {
+                    printf("Error: -br/--brightness requires an argument (0-100)\n");
+                    return 0;
+                }
+            } else if (strcmp(argv[i], "-ct") == 0 || strcmp(argv[i], "--contrast") == 0) {
+                if (i + 1 < argc) {
+                    int contrast = atoi(argv[i + 1]);
+                    if (contrast < 0 || contrast > 100) {
+                        printf("Error: Contrast must be between 0 and 100\n");
+                        return 0;
+                    }
+                    context->contrast = contrast;
+                    i++; // Pomiń następny argument, bo to wartość kontrastu
+                } else {
+                    printf("Error: -ct/--contrast requires an argument (0-100)\n");
+                    return 0;
+                }
+            } else if (strcmp(argv[i], "--bmp") == 0) {
+                context->generate_bmp = 1;
             } else if (strcmp(argv[i], "--help") == 0) {
                 return 0; // Pokaże pomoc
             } else {

@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-Wall -std=c99
 LIBS=
 
-SOURCES=bmp_to_xbpp.c bmp_reader.c utils.c options.c
+SOURCES=bmp_to_xbpp.c bmp_reader.c utils.c options.c bmp_writer.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: bmp_to_xbpp
