@@ -8,7 +8,7 @@ Program umożliwia konwersję obrazów BMP na dane w dwóch formatach:
 - **4bpp (4 bits per pixel)** - dla wyświetlaczy LCD z paletą 16 odcieni (każdy bajt zawiera 2 piksele)
 - **1bpp (1 bit per pixel)** - dla wyświetlaczy monochromatycznych (każdy bajt zawiera 8 pikseli)
 
-Program obsługuje różne algorytmy ditheringu dla trybu 1bpp, aby uzyskać najlepszą jakość wizualną przy konwersji do czarno-białego.
+Program obsługuje różne algorytmy ditheringu dla trybu 1bpp, aby uzyskać najlepszą jakość wizualną przy konwersji do czarno-białego. Dodatkowo oferuje zaawansowane opcje regulacji obrazu: jasność i kontrast, które pozwalają na precyzyjne dostrojenie wyglądu konwersji.
 
 ### Przykłady konwersji
 
@@ -32,6 +32,59 @@ Program obsługuje różne algorytmy ditheringu dla trybu 1bpp, aby uzyskać naj
 ![Ordered 8x8](img/sample-image-dither-o8x8-1bpp.bmp)
 *Używa matrycy Bayer 8x8 do tworzenia regularnego wzoru ditheringu, optymalnego dla wyświetlaczy.*
 
+### Regulacja jasności i kontrastu
+
+Program oferuje zaawansowane opcje regulacji obrazu dla trybu 1bpp:
+
+#### Parametry regulacji:
+- **Jasność (`-br`, `--brightness`)**: 0-100% (domyślnie 50%)
+  - 0% = maksymalnie ciemny obraz
+  - 50% = oryginalna jasność
+  - 100% = maksymalnie jasny obraz
+
+- **Kontrast (`-ct`, `--contrast`)**: 0-100% (domyślnie 50%)
+  - 0% = brak kontrastu (szary)
+  - 50% = oryginalny kontrast
+  - 100% = maksymalny kontrast
+
+#### Przykłady regulacji jasności (kontrast stały 80%):
+
+**Jasność 10%:**
+![Jasność 10%](img/sample-image-dither-floyd-br10-ct80.bmp)
+*Bardzo ciemny obraz - większość szczegółów zanika*
+
+**Jasność 50%:**
+![Jasność 50%](img/sample-image-dither-floyd-br50-ct80.bmp)
+*Średnia jasność - zachowuje większość szczegółów*
+
+**Jasność 100%:**
+![Jasność 100%](img/sample-image-dither-floyd-br100-ct80.bmp)
+*Maksymalnie jasny obraz - może powodować przepalenie jasnych obszarów*
+
+#### Przykłady regulacji kontrastu (jasność stała 50%):
+
+**Kontrast 10%:**
+![Kontrast 10%](img/sample-image-dither-floyd-br50-ct10.bmp)
+*Bardzo niski kontrast - obraz wygląda "płasko"*
+
+**Kontrast 50%:**
+![Kontrast 50%](img/sample-image-dither-floyd-br50-ct50.bmp)
+*Średni kontrast - naturalny wygląd*
+
+**Kontrast 80%:**
+![Kontrast 80%](img/sample-image-dither-floyd-br50-ct80.bmp)
+*Wysoki kontrast - wyostrzone krawędzie i szczegóły*
+
+#### Przykłady kombinacji jasności i kontrastu:
+
+**Jasność 70%, Kontrast 100%:**
+![Jasność 70%, Kontrast 100%](img/sample-image-dither-floyd-br70-ct100.bmp)
+*Jasny obraz z maksymalnym kontrastem - idealny do wyświetlaczy o niskiej jakości*
+
+**Jasność 60%, Kontrast 70%:**
+![Jasność 60%, Kontrast 70%](img/sample-image-dither-floyd-br60-ct70.bmp)
+*Zbalansowane ustawienia - dobre dla większości zastosowań*
+
 ### Jak osiągnąć te rezultaty
 
 1. **Konwersja 4bpp (domyślna)** - zobacz sekcję [Użycie](#użycie):
@@ -52,6 +105,15 @@ Program obsługuje różne algorytmy ditheringu dla trybu 1bpp, aby uzyskać naj
 4. **Konwersja 1bpp z Ordered dithering**:
    ```bash
    ./bmp_to_xbpp -1 -d o8x8 img/sample-image.bmp
+   ```
+
+5. **Konwersja 1bpp z regulacją jasności i kontrastu**:
+   ```bash
+   # Jasność 70%, Kontrast 100%
+   ./bmp_to_xbpp -1 -d floyd -br 70 -ct 100 --bmp img/sample-image.bmp output/br70_ct100
+   
+   # Jasność 60%, Kontrast 70%
+   ./bmp_to_xbpp -1 -d floyd -br 60 -ct 70 --bmp img/sample-image.bmp output/br60_ct70
    ```
 
 ## Opis
@@ -116,6 +178,11 @@ Dostępne konfiguracje:
   - `floyd` - Floyd-Steinberg dithering
   - `o8x8` - Ordered 8x8 dithering
 
+### Opcje regulacji obrazu (tylko dla 1bpp):
+- `-br, --brightness PERC` - Jasność 0-100% (domyślnie 50%)
+- `-ct, --contrast PERC` - Kontrast 0-100% (domyślnie 50%)
+- `--bmp` - Generuj BMP preview
+
 ### Inne opcje:
 - `--help` - Pokaż pomoc
 
@@ -142,6 +209,54 @@ Tryb 1bpp konwertuje obrazy do formatu monochromatycznego (czarno-biały), gdzie
 - **Zalety**: Przewidywalny wzór, optymalny dla wyświetlaczy
 - **Wady**: Może być widoczny regularny wzór
 - **Użycie**: `./bmp_to_xbpp -1 -d o8x8 image.bmp`
+
+### Regulacja jasności i kontrastu
+
+Program oferuje zaawansowaną kontrolę nad konwersją 1bpp poprzez parametry jasności i kontrastu:
+
+#### Jasność (0-100%)
+- **0%**: Bardzo ciemny obraz (prawie wszystkie piksele czarne)
+- **25%**: Ciemny obraz
+- **50%**: Neutralna jasność (domyślna)
+- **75%**: Jasny obraz
+- **100%**: Bardzo jasny obraz (prawie wszystkie piksele białe)
+
+#### Kontrast (0-100%)
+- **0%**: Brak kontrastu (wszystkie piksele w środku skali)
+- **25%**: Niski kontrast
+- **50%**: Normalny kontrast (domyślny)
+- **75%**: Wysoki kontrast
+- **100%**: Maksymalny kontrast (tylko czarne i białe piksele)
+
+#### Przykłady użycia:
+```bash
+# Ciemny obraz z niskim kontrastem
+./bmp_to_xbpp -1 -br 25 -ct 25 image.bmp
+
+# Jasny obraz z wysokim kontrastem
+./bmp_to_xbpp -1 -br 75 -ct 75 image.bmp
+
+# Ekstremalne wartości
+./bmp_to_xbpp -1 -br 0 -ct 100 image.bmp  # Bardzo ciemny, maksymalny kontrast
+./bmp_to_xbpp -1 -br 100 -ct 0 image.bmp  # Bardzo jasny, brak kontrastu
+
+# Generowanie BMP preview do wizualizacji
+./bmp_to_xbpp -1 -br 25 -ct 75 -d floyd --bmp image.bmp preview
+```
+
+#### Przykłady graficzne z różnymi ustawieniami:
+
+**Jasność (kontrast 50%, Floyd-Steinberg):**
+- `sample-image-br0-ct50-floyd.bmp` - 0% jasności (bardzo ciemny)
+- `sample-image-br15-ct50-floyd.bmp` - 15% jasności (ciemny)
+- `sample-image-br25-ct50-floyd.bmp` - 25% jasności (ciemny)
+- `sample-image-br50-ct50-floyd.bmp` - 50% jasności (neutralny)
+- `sample-image-br75-ct50-floyd.bmp` - 75% jasności (jasny)
+
+**Kontrast (jasność 50%, Floyd-Steinberg):**
+- `sample-image-br50-ct0-floyd.bmp` - 0% kontrastu (brak kontrastu)
+- `sample-image-br50-ct50-floyd.bmp` - 50% kontrastu (normalny)
+- `sample-image-br50-ct100-floyd.bmp` - 100% kontrastu (maksymalny)
 
 ### Endianness w trybie 1bpp
 
@@ -280,6 +395,18 @@ $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 # 1bpp z Ordered dithering
 ./bmp_to_xbpp -1 -d o8x8 test.bmp ordered.h
 
+# 1bpp z regulacją jasności i kontrastu
+./bmp_to_xbpp -1 -br 25 -ct 75 test.bmp dark_high_contrast.h
+
+# 1bpp z jasnym obrazem i niskim kontrastem
+./bmp_to_xbpp -1 -br 75 -ct 25 test.bmp bright_low_contrast.h
+
+# 1bpp z generowaniem BMP preview
+./bmp_to_xbpp -1 -br 25 -ct 75 -d floyd --bmp test.bmp dark_high_contrast
+
+# 4bpp z generowaniem BMP preview
+./bmp_to_xbpp -4 --bmp test.bmp grayscale_preview
+
 # 1bpp z big endian
 ./bmp_to_xbpp -1 -b test.bmp big_endian.h
 
@@ -349,6 +476,24 @@ MIT - zobacz nagłówki plików źródłowych dla szczegółów.
 
 ## Lista zmian
 
+### v1.0.2 (30/09/2025) - Rozszerzenie o regulację jasności i kontrastu
+- **Nowe funkcje:**
+  - dodano regulację jasności (`-br`, `--brightness`) 0-100% dla trybu 1bpp
+  - dodano regulację kontrastu (`-ct`, `--contrast`) 0-100% dla trybu 1bpp
+  - dodano opcję `--bmp` do generowania BMP preview dla obu trybów (1bpp i 4bpp)
+  - rozszerzono komentarze w plikach wynikowych o informacje o jasności i kontrastu
+  - dodano skrypty Shell i BAT do generowania serii obrazów z różnymi ustawieniami
+
+- **Ulepszenia:**
+  - naprawiono kolejność pikseli w trybie poziomym dla 1bpp
+  - rozszerzono dokumentację o szczegółowe opisy regulacji obrazu
+  - dodano przykłady obrazów pokazujące efekty różnych ustawień jasności i kontrastu
+  - dodano sekcję ze skryptami do automatycznego generowania serii testowych
+
+- **Zachowana kompatybilność:**
+  - wszystkie istniejące opcje CLI działają bez zmian
+  - opcje regulacji obrazu są ignorowane dla trybu 4bpp (z wyjątkiem `--bmp`)
+
 ### v1.0.1 (29/09/2025) - Rozszerzenie o obsługę 1bpp i dithering
 - **Nowe funkcje:**
   - dodano obsługę trybu 1bpp (1 bit per pixel) dla wyświetlaczy monochromatycznych
@@ -385,6 +530,49 @@ MIT - zobacz nagłówki plików źródłowych dla szczegółów.
 - **Platformy:**
   - Linux/macOS (Makefile + gcc)
   - Windows (Visual Studio 2019+)
+
+## Skrypty do generowania serii obrazów
+
+Projekt zawiera gotowe skrypty do automatycznego generowania serii obrazów BMP z różnymi kombinacjami jasności i kontrastu.
+
+### Dostępne skrypty
+
+- **`scripts/generate_brightness_contrast_series.sh`** - skrypt dla Linux/macOS
+- **`scripts/generate_brightness_contrast_series.bat`** - skrypt dla Windows
+
+### Funkcjonalność
+
+Skrypty generują wszystkie kombinacje jasności i kontrastu (0-100% co 10%), tworząc 121 plików BMP z różnymi ustawieniami. Każdy plik jest nazywany według wzoru `br{jasność}_ct{kontrast}.bmp`.
+
+### Użycie
+
+**Linux/macOS:**
+```bash
+chmod +x scripts/generate_brightness_contrast_series.sh
+./scripts/generate_brightness_contrast_series.sh
+```
+
+**Windows:**
+```cmd
+scripts\generate_brightness_contrast_series.bat
+```
+
+### Konfiguracja
+
+W obu skryptach można łatwo zmienić:
+- **Katalog wyjściowy:** zmienna `OUTPUT_DIR` (domyślnie `preview`)
+- **Zakres wartości:** edytuj pętle w skrypcie (domyślnie 0-100% co 10%)
+
+### Rezultat
+
+Skrypty tworzą katalog `preview/` (lub inny, jeśli zmieniono `OUTPUT_DIR`) z plikami:
+- `br0_ct0.bmp` - jasność 0%, kontrast 0%
+- `br10_ct20.bmp` - jasność 10%, kontrast 20%
+- `br50_ct50.bmp` - jasność 50%, kontrast 50% (domyślne)
+- `br100_ct100.bmp` - jasność 100%, kontrast 100%
+- itd.
+
+Skrypty automatycznie liczą i wyświetlają rzeczywistą liczbę wygenerowanych plików.
 
 ## Autor
 
