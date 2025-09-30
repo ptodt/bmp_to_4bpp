@@ -8,3 +8,5 @@ bmp_to_xbpp.exe
 # Pliki tymczasowe
 *.tmp
 *.temp
+
+preview/*
