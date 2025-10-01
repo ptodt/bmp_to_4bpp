@@ -23,9 +23,41 @@
 #include "bmp_writer.h"
 #include "bmp_palette.h"
 
+/**
+ * @brief Główna funkcja programu konwertującego BMP na tablice bajtów
+ * 
+ * @details Funkcja main implementuje główną logikę programu konwertującego
+ * pliki BMP na tablice bajtów w różnych formatach (C array, raw data, assembler).
+ * Obsługuje konwersję 1bpp i 4bpp z różnymi metodami ditheringu, paletami kolorów
+ * i opcjami skanowania. Generuje pliki wyjściowe w wybranym formacie oraz
+ * opcjonalne podglądy BMP.
+ * 
+ * @param argc Liczba argumentów wiersza poleceń
+ * @param argv Tablica argumentów wiersza poleceń
+ * 
+ * @return 0 w przypadku sukcesu, 1 w przypadku błędu
+ * 
+ * @note Wyświetla informacje o wersji i autorze przy starcie
+ * @note Parsuje argumenty wiersza poleceń
+ * @note Obsługuje wszystkie formaty wyjściowe i opcje konwersji
+ * @note Generuje podglądy BMP z różnymi paletami
+ * @note Obsługuje inwersję bitów i różne kierunki skanowania
+ * 
+ * @example
+ * ```bash
+ * # Konwersja 4bpp z domyślnymi ustawieniami
+ * ./bmp_to_xbpp image.bmp
+ * 
+ * # Konwersja 1bpp z ditheringiem Floyd-Steinberg
+ * ./bmp_to_xbpp -1 -d floyd image.bmp
+ * 
+ * # Konwersja z podglądem BMP i paletą zieloną
+ * ./bmp_to_xbpp -1 --bmp --palette green image.bmp
+ * ```
+ */
 int main(int argc, char* argv[]) {
     printf("\n");
-    printf("BMP to xbpp Array Converter v1.0.3 2025-09-30\n");
+    printf("BMP to xbpp Array Converter %s (%s) (c) %s (https://ptodt.org.pl)\n", VERSION_STRING, BUILD_DATETIME, COPYRIGHT_STRING);
     printf("\n");
     printf("CODE BY                                      \n");
     printf("    ----.-.---.---.---.                      \n");

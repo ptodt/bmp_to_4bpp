@@ -16,7 +16,33 @@
 #include "bmp_writer.h"
 #include "bmp_palette.h"
 
-// Funkcja generowania pliku BMP z danych 1bpp
+/**
+ * @brief Generuje plik BMP 1bpp z spakowanych danych
+ * 
+ * @details Funkcja tworzy plik BMP w formacie 1bpp (1 bit na piksel) z danych
+ * spakowanych w bajtach. Obsługuje różne palety kolorów, skanowanie poziome/pionowe
+ * i generuje pełny plik BMP z nagłówkami, paletą kolorów i danymi obrazu.
+ * 
+ * @param packed_data Wskaźnik do spakowanych danych 1bpp (8 pikseli na bajt)
+ * @param preview_ctx Wskaźnik do struktury PreviewContext z parametrami
+ * 
+ * @return 1 w przypadku sukcesu, 0 w przypadku błędu
+ * 
+ * @note Generuje pełny plik BMP z nagłówkami i paletą
+ * @note Obsługuje wyrównanie wierszy do granicy 4-bajtowej
+ * @note Konwertuje dane kolumnowe na wierszowe dla podglądu
+ * @note Używa palety 2-kolorowej (0=czarny, 1=biały)
+ * 
+ * @example
+ * ```c
+ * PreviewContext ctx = {64, 32, "preview.bmp", PALETTE_BW, NULL, NULL, 1};
+ * uchar data[256];  // 64*32/8 = 256 bajtów
+ * 
+ * if (generate_1bpp_bmp(data, &ctx)) {
+ *     // Plik BMP został wygenerowany pomyślnie
+ * }
+ * ```
+ */
 int generate_1bpp_bmp(uchar* packed_data, PreviewContext* preview_ctx) {
     int width = preview_ctx->width;
     int height = preview_ctx->height;
@@ -120,7 +146,33 @@ int generate_1bpp_bmp(uchar* packed_data, PreviewContext* preview_ctx) {
     return 1;
 }
 
-// Funkcja generowania pliku BMP z danych 4bpp
+/**
+ * @brief Generuje plik BMP 4bpp z spakowanych danych
+ * 
+ * @details Funkcja tworzy plik BMP w formacie 4bpp (4 bity na piksel) z danych
+ * spakowanych w bajtach. Obsługuje różne palety kolorów, skanowanie poziome/pionowe
+ * i generuje pełny plik BMP z nagłówkami, paletą kolorów i danymi obrazu.
+ * 
+ * @param packed_data Wskaźnik do spakowanych danych 4bpp (2 piksele na bajt)
+ * @param preview_ctx Wskaźnik do struktury PreviewContext z parametrami
+ * 
+ * @return 1 w przypadku sukcesu, 0 w przypadku błędu
+ * 
+ * @note Generuje pełny plik BMP z nagłówkami i paletą 16-kolorową
+ * @note Obsługuje wyrównanie wierszy do granicy 4-bajtowej
+ * @note Konwertuje dane kolumnowe na wierszowe dla podglądu
+ * @note Używa palety 16-kolorowej z interpolacją liniową
+ * 
+ * @example
+ * ```c
+ * PreviewContext ctx = {64, 32, "preview.bmp", PALETTE_BW, NULL, NULL, 1};
+ * uchar data[512];  // 64*32/2 = 1024 bajtów
+ * 
+ * if (generate_4bpp_bmp(data, &ctx)) {
+ *     // Plik BMP został wygenerowany pomyślnie
+ * }
+ * ```
+ */
 int generate_4bpp_bmp(uchar* packed_data, PreviewContext* preview_ctx) {
     int width = preview_ctx->width;
     int height = preview_ctx->height;

@@ -23,7 +23,7 @@ int pack_pixels_1bpp(uchar* grayscale_data, uchar* packed_data, int width, int h
 int write_array(uchar* packed_data, int data_size, int width, int height, const char* array_name, const char* output_path, int output_format, int use_progmem, int bits_per_pixel, int dithering_method, int brightness, int contrast, int invert);
 
 // Funkcje pomocnicze
-const char* generate_c_attributes(int use_progmem);
+void write_file_header(FILE* file, HeaderContext* ctx);
 void set_default_extension(char* output_file, int output_format);
 
 // Indywidualne zapisywacze formatów (implementacje Strategy)

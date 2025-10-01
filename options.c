@@ -20,6 +20,26 @@
 // Funkcje obsługi argumentów
 // ============================================================================
 
+/**
+ * @brief Wyświetla pomoc programu z opisem wszystkich opcji
+ * 
+ * @details Funkcja wyświetla szczegółową pomoc programu zawierającą opis
+ * wszystkich dostępnych opcji wiersza poleceń, formatów wyjściowych,
+ * metod ditheringu, palet kolorów i parametrów konwersji. Pomoc jest
+ * sformatowana w czytelny sposób z podziałem na sekcje tematyczne.
+ * 
+ * @param program_name Nazwa programu (zwykle argv[0])
+ * 
+ * @note Wyświetla wszystkie opcje wiersza poleceń
+ * @note Zawiera przykłady użycia i opisy formatów
+ * @note Grupuje opcje tematycznie (dithering, palety, etc.)
+ * 
+ * @example
+ * ```c
+ * print_usage("bmp_to_xbpp");
+ * // Wyświetla pełną pomoc programu
+ * ```
+ */
 void print_usage(const char* program_name) {
     printf("Usage: %s [OPTIONS] INPUT_BMP [OUTPUT_C_FILE]\n", program_name);
     printf("\n");
@@ -71,6 +91,38 @@ void print_usage(const char* program_name) {
     printf("  %s -n sprite_data -v -a image.bmp sprite.inc\n", program_name);
 }
 
+/**
+ * @brief Parsuje argumenty wiersza poleceń i konfiguruje kontekst konwersji
+ * 
+ * @details Funkcja analizuje argumenty wiersza poleceń i konfiguruje strukturę
+ * ConversionContext zgodnie z podanymi opcjami. Obsługuje wszystkie opcje
+ * programu, waliduje argumenty i ustawia domyślne wartości. Zwraca status
+ * parsowania i ustawia wskaźniki na pliki wejściowy i wyjściowy.
+ * 
+ * @param argc Liczba argumentów wiersza poleceń
+ * @param argv Tablica argumentów wiersza poleceń
+ * @param context Wskaźnik do struktury ConversionContext (wyjściowa)
+ * @param input_file Wskaźnik do wskaźnika na nazwę pliku wejściowego (wyjściowy)
+ * @param output_file Wskaźnik do wskaźnika na nazwę pliku wyjściowego (wyjściowy)
+ * 
+ * @return 1 w przypadku sukcesu, 0 w przypadku błędu
+ * 
+ * @note Ustawia domyślne wartości dla wszystkich opcji
+ * @note Waliduje argumenty i wyświetla błędy
+ * @note Obsługuje opcje z argumentami (--name, --dither, etc.)
+ * @note Automatycznie ustawia rozszerzenia plików na podstawie formatu
+ * 
+ * @example
+ * ```c
+ * ConversionContext ctx;
+ * char* input, *output;
+ * 
+ * if (parse_arguments(argc, argv, &ctx, &input, &output)) {
+ *     // Argumenty zostały sparsowane pomyślnie
+ *     printf("Input: %s, Output: %s\n", input, output);
+ * }
+ * ```
+ */
 int parse_arguments(int argc, char* argv[], ConversionContext* context, char** input_file, char** output_file) {
     *input_file = NULL;
     *output_file = "image_data.h"; // Zostanie zaktualizowane na podstawie formatu

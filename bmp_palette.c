@@ -12,7 +12,33 @@
 
 #include "bmp_palette.h"
 
-// Funkcja generowania palety z różnymi wariantami
+/**
+ * @brief Generuje paletę kolorów BMP dla różnych wariantów i głębi
+ * 
+ * @details Funkcja generuje paletę kolorów BMP na podstawie wybranego wariantu
+ * i liczby kolorów. Obsługuje palety 1bpp (2 kolory) i 4bpp (16 kolorów) z
+ * różnymi wariantami: BW, GRAY, GREEN, PORTFOLIO, OLED_YELLOW i CUSTOM.
+ * Dla palet 4bpp wykonuje interpolację liniową między kolorem początkowym
+ * a końcowym.
+ * 
+ * @param palette Wskaźnik do tablicy BMPColorEntry (wyjściowa)
+ * @param context Wskaźnik do struktury PaletteContext z parametrami
+ * 
+ * @note Dla 1bpp: generuje dokładnie 2 kolory (0 i 1)
+ * @note Dla 4bpp: generuje 16 kolorów z interpolacją liniową
+ * @note Wszystkie kolory mają alpha = 0x00 (przezroczystość)
+ * @note Obsługuje palety niestandardowe z custom_first i custom_last
+ * 
+ * @example
+ * ```c
+ * BMPColorEntry palette[16];
+ * PaletteContext ctx = {PALETTE_BW, 16, NULL, NULL};
+ * 
+ * generate_palette(palette, &ctx);
+ * // palette[0] = (0,0,0), palette[15] = (255,255,255)
+ * // palette[1-14] = interpolowane odcienie szarości
+ * ```
+ */
 void generate_palette(BMPColorEntry* palette, PaletteContext* context) {
     BMPColorEntry color0, color15;
     
@@ -37,7 +63,7 @@ void generate_palette(BMPColorEntry* palette, PaletteContext* context) {
             break;
             
         case PALETTE_PORTFOLIO:
-            // Portfolio
+            // Atari Portfolio
             color0.blue = 144; color0.green = 238; color0.red = 144; color0.alpha = 0x00;
             color15.blue = 160; color15.green = 72; color15.red = 72; color15.alpha = 0x00;
             break;
