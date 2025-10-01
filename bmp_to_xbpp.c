@@ -230,9 +230,11 @@ int main(int argc, char* argv[]) {
         // Generuj BMP preview (bez inwersji - paleta zawsze standardowa)
         int success = 0;
         if (context.bits_per_pixel == BITS_PER_PIXEL_1BPP) {
-            success = generate_1bpp_bmp(packed_data, width, height, bmp_path, context.palette_variant, context.custom_color_first, context.custom_color_last);
+            PreviewContext preview_ctx = {width, height, bmp_path, context.palette_variant, context.custom_color_first, context.custom_color_last, context.scan_direction};
+            success = generate_1bpp_bmp(packed_data, &preview_ctx);
         } else if (context.bits_per_pixel == BITS_PER_PIXEL_4BPP) {
-            success = generate_4bpp_bmp(packed_data, width, height, bmp_path, context.palette_4bpp_variant, context.custom_color_first, context.custom_color_last);
+            PreviewContext preview_ctx = {width, height, bmp_path, context.palette_4bpp_variant, context.custom_color_first, context.custom_color_last, context.scan_direction};
+            success = generate_4bpp_bmp(packed_data, &preview_ctx);
         }
         
         if (success) {

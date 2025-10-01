@@ -17,7 +17,7 @@
 #include "bmp_defs.h"
 
 // Prototypy funkcji zapisu BMP
-int generate_1bpp_bmp(uchar* packed_data, int width, int height, const char* output_path, int palette_variant, uchar* custom_first, uchar* custom_last);
-int generate_4bpp_bmp(uchar* packed_data, int width, int height, const char* output_path, int palette_variant, uchar* custom_first, uchar* custom_last);
+int generate_1bpp_bmp(uchar* packed_data, PreviewContext* preview_ctx);
+int generate_4bpp_bmp(uchar* packed_data, PreviewContext* preview_ctx);
 
 #endif

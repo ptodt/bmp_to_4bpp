@@ -66,13 +66,6 @@ int convert_to_grayscale_4bpp(uchar* image_data, uchar* grayscale_data, int widt
 // Funkcje pomocnicze
 // ============================================================================
 
-const char* generate_c_attributes(int use_progmem) {
-    if (use_progmem) {
-        return " PROGMEM";
-    } else {
-        return "";
-    }
-}
 
 void set_default_extension(char* output_file, int output_format) {
     // Usuń istniejące rozszerzenie
@@ -225,7 +218,7 @@ int format_c_array_write(uchar* packed_data, int data_size, int width, int heigh
         }
     }
     fprintf(file, "\n");
-    fprintf(file, "const unsigned char %s[%d]%s = {\n", array_name, data_size, generate_c_attributes(use_progmem));
+    fprintf(file, "const unsigned char %s[%d]%s = {\n", array_name, data_size, ((use_progmem) ? " PROGMEM" : ""));
     
     for (int i = 0; i < data_size; i++) {
         if (i % 16 == 0) {
@@ -508,12 +501,10 @@ int pack_pixels_1bpp(uchar* grayscale_data, uchar* packed_data, int width, int h
                         if (pixel_value) {
                             if (pixel_order) {
                                 // Little endian: bit 0 = pierwszy piksel (góra)
-                                // W trybie pionowym odwracamy kolejność bitów
-                                byte_value |= (1 << (7 - bit));
+                                byte_value |= (1 << bit);
                             } else {
                                 // Big endian: bit 7 = pierwszy piksel (góra)
-                                // W trybie pionowym odwracamy kolejność bitów
-                                byte_value |= (1 << bit);
+                                byte_value |= (1 << (7 - bit));
                             }
                         }
                     }

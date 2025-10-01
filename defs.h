@@ -61,4 +61,15 @@ typedef struct {
     uchar custom_color_last[3];   // Ostatni kolor w rampie niestandardowej (R,G,B)
 } ConversionContext;
 
+// Kontekst podglądu BMP
+typedef struct {
+    int width;                 // Szerokość obrazu
+    int height;                // Wysokość obrazu
+    const char* output_path;   // Ścieżka do pliku wyjściowego
+    int palette_variant;       // Wariant palety (0=BW, 1=GRAY, 2=GREEN, 3=PORTFOLIO, 4=OLED_YELLOW, 5=CUSTOM)
+    uchar* custom_first;       // Pierwszy kolor w rampie niestandardowej (R,G,B)
+    uchar* custom_last;        // Ostatni kolor w rampie niestandardowej (R,G,B)
+    int scan_direction;        // 1 = poziomo (wiersze), 0 = pionowo (kolumny)
+} PreviewContext;
+
 #endif
