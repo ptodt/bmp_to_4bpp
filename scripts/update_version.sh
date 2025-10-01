@@ -11,6 +11,7 @@ cd "$(dirname "$0")/.."
 
 VERSION_FILE="VERSION"
 VERSION_HEADER="version.h"
+FILE_ID_DIZ="FILE_ID.DIZ"
 
 if [ ! -f "$VERSION_FILE" ]; then
     echo "Błąd: Plik $VERSION_FILE nie istnieje"
@@ -46,4 +47,29 @@ cat > "$VERSION_HEADER" << EOF
 #endif
 EOF
 
+# Wygeneruj FILE_ID.DIZ
+cat > "$FILE_ID_DIZ" << EOF
+          BMP to xbpp Array Converter 
+          $VERSION ($BUILD_DATETIME)
+       (c) PTODT (https://ptodt.org.pl)
+
+CODE BY                                      
+    ----.-.---.---.---.                      
+        |-.---.   |--.|#==---.. .  .  .      
+     |  | |   | --.   |#==---. . .           
+    -'--'-'---'---'---'              2025.09
+
+Usage: https://github.com/ptodt/bmp_to_4bpp
+
+Converts  a  BMP  image   to  an  array  (C,
+assembler include file, hex values separated
+by  commas)  containing packed  pixel  data.
+Supports  both 4bpp  (4 bits per  pixel) and
+1bpp (1 bit per pixel) formats.
+
+ -=# Didn't like it? Mind you own values #=-
+
+EOF
+
 echo "Zaktualizowano $VERSION_HEADER z wersją $VERSION ($DATE) - build time: $BUILD_TIME"
+echo "Wygenerowano $FILE_ID_DIZ z wersją $VERSION ($BUILD_DATETIME)"

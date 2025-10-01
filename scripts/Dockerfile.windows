@@ -1,0 +1,21 @@
+# Dockerfile do budowania bmp_to_xbpp na Windows za pomocą MinGW-w64
+FROM ubuntu:22.04
+
+# Instalacja zależności budowania i MinGW-w64
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    make \
+    mingw-w64 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ustawienie katalogu roboczego
+WORKDIR /app
+
+# Kopiowanie plików źródłowych
+COPY . .
+
+# Budowanie aplikacji dla Windows (statyczny link)
+RUN make clean && \
+    make CC=x86_64-w64-mingw32-gcc CFLAGS="-Wall -std=c99 -static" LDFLAGS="-static"
+
+# Kontener tylko kompiluje - wersjonowanie i pakowanie robi skrypt shell

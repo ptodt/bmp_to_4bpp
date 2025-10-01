@@ -11,5 +11,6 @@ bmp_to_xbpp.exe
 
 # Automatycznie generowane pliki
 version.h
+FILE_ID.DIZ
 
 preview/*

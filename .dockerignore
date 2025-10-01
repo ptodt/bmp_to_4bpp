@@ -1,0 +1,19 @@
+# Ignore unnecessary files for Docker build context
+.git
+.gitignore
+*.zip
+*.bmp
+*.jpeg
+*.jpg
+*.png
+img/
+preview/
+release/
+*.o
+*.exe
+*.app
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+

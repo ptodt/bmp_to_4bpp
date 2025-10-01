@@ -1,0 +1,21 @@
+# Dockerfile do budowania bmp_to_xbpp na Ubuntu LTS
+FROM ubuntu:22.04
+
+# Instalacja zależności budowania
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    make \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ustawienie katalogu roboczego
+WORKDIR /app
+
+# Kopiowanie plików źródłowych
+COPY . .
+
+# Budowanie aplikacji
+RUN make clean && make
+
+# Kontener tylko kompiluje - wersjonowanie i pakowanie robi skrypt shell
+
