@@ -13,6 +13,8 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
+#include "version.h"
+
 typedef unsigned char uchar;
 typedef unsigned short word;
 typedef unsigned int dword;  // Użyj 32-bit dla kompatybilności z BMP
@@ -71,5 +73,17 @@ typedef struct {
     uchar* custom_last;        // Ostatni kolor w rampie niestandardowej (R,G,B)
     int scan_direction;        // 1 = poziomo (wiersze), 0 = pionowo (kolumny)
 } PreviewContext;
+
+// Kontekst nagłówka pliku
+typedef struct {
+    int width;                 // Szerokość obrazu (0 = pomiń w nagłówku)
+    int height;                // Wysokość obrazu (0 = pomiń w nagłówku)
+    int bits_per_pixel;        // Głębia kolorów (1 lub 4)
+    int dithering_method;      // Metoda ditheringu (tylko dla 1bpp)
+    int brightness;            // Jasność 0-100% (tylko dla 1bpp)
+    int contrast;              // Kontrast 0-100% (tylko dla 1bpp)
+    int invert;                // 1 = odwróć bity
+    int is_assembler;          // 1 = użyj ";" jako prefiks, 0 = użyj "//"
+} HeaderContext;
 
 #endif

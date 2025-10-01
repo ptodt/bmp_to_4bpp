@@ -4,21 +4,31 @@
 #
 # Copyright (c) 2025 PTODT <https://ptodt.org.pl>
 # Autor: Michal Kolodziejski (2:480/112.10)
-# Data: 2025.09.30
+# Data: 2025.10.01
 # Licencja: MIT
+
+# Przejdź do katalogu głównego projektu (jeden poziom wyżej)
+cd "$(dirname "$0")/.."
+
+# Wczytaj wersję z pliku VERSION
+if [ -f "VERSION" ]; then
+    VERSION=$(cat "VERSION" | tr -d '\n\r')
+else
+    VERSION="1.0.3"
+fi
 
 # Konfiguracja
 OUTPUT_DIR="preview"
 
 echo "------------------------------------"
-echo "-- BMP TO XBPP CONVERTER v1.0.2   --"
+echo "-- BMP TO XBPP CONVERTER v$VERSION   --"
 echo "-- BRIGHTNESS/CONTRAST SERIES GEN --"
 echo "------------------------------------"
 echo ""
-echo "  CODE BY                                  
-echo "  ----.-.---.---.---.                      
-echo "      |-.---.   |--.|#==---.. .  .  .      
-echo "   |  | |   | --.   |#==---. . .           
+echo "  CODE BY                                  "
+echo "  ----.-.---.---.---.                      "
+echo "      |-.---.   |--.|#==---.. .  .  .      "
+echo "   |  | |   | --.   |#==---. . .           "
 echo "  -'--'-'---'---'---'               2025.09"
 echo ""
 

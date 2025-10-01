@@ -5,14 +5,24 @@ REM Generuje serię obrazów BMP z różnymi kombinacjami jasności i kontrastu
 REM
 REM Copyright (c) 2025 PTODT <https://ptodt.org.pl>
 REM Autor: Michal Kolodziejski (2:480/112.10)
-REM Data: 2025.09.30
+REM Data: 2025.10.01
 REM Licencja: MIT
+
+REM Przejdź do katalogu głównego projektu (jeden poziom wyżej)
+cd /d "%~dp0.."
+
+REM Wczytaj wersję z pliku VERSION
+if exist "VERSION" (
+    for /f "delims=" %%i in (VERSION) do set VERSION=%%i
+) else (
+    set VERSION=1.0.3
+)
 
 REM Konfiguracja
 set OUTPUT_DIR=preview
 
 @ECHO ------------------------------------
-@ECHO -- BMP TO XBPP CONVERTER v1.0.2   --
+@ECHO -- BMP TO XBPP CONVERTER v%VERSION%   --
 @ECHO -- BRIGHTNESS/CONTRAST SERIES GEN --
 @ECHO ------------------------------------
 @ECHO.

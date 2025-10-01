@@ -9,4 +9,7 @@ bmp_to_xbpp.exe
 *.tmp
 *.temp
 
+# Automatycznie generowane pliki
+version.h
+
 preview/*
